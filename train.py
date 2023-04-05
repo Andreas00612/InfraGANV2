@@ -122,3 +122,4 @@ if __name__ == '__main__':
     visualizer.train_log_writer.close()
     visualizer.val_log_writer.close()
     print('a')
+    print('b')
