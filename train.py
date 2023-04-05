@@ -121,3 +121,4 @@ if __name__ == '__main__':
                            (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
     visualizer.train_log_writer.close()
     visualizer.val_log_writer.close()
+    print('a')
