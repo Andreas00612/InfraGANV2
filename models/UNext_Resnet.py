@@ -7,6 +7,7 @@ import math
 from models.UNeXt import shiftedBlock, OverlapPatchEmbed, shiftedBlock_L
 
 
+
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, down=True, use_act=True, **kwargs):
         super().__init__()
@@ -141,10 +142,15 @@ class Tokenized_ResNet(nn.Module):
             x = layer(x)
 
         x = self.up(x)
-        if len(self.UNext_blocks):
-            x = self.UNext_blocks(x)
+
         if len(self.res_blocks):
             x = self.res_blocks(x)
+
+
+        if len(self.UNext_blocks):
+            x = self.UNext_blocks(x)
+
+
 
         x = self.down(x)
 
@@ -157,9 +163,19 @@ def test():
     img_channels = 3
     x = torch.randn((2, img_channels, 512, 512))
 
-    gen = Tokenized_ResNet(img_channels=3, num_features=64, num_residuals=9, out_channels=1, img_size=512)
+    #gen = Tokenized_ResNet(img_channels=3, num_features=64, num_residuals=9, out_channels=1, img_size=512)
+    gen = Tokenized_ResNet(3, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1, img_size=512,
+                            shift_type='shiftedBlock_L2', token_channel=256)
     print(gen(x).shape)
+    print_network(gen)
 
+def print_network(net):
+    num_params = 0
+    for param in net.parameters():
+        num_params += param.numel()
+
+    # print(net)
+    print(f'{net.__class__.__name__} -> Total number of parameters: {num_params}')
 
 if __name__ == "__main__":
     test()
