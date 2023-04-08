@@ -11,6 +11,7 @@ from torch.nn import init
 from models.conce import CoNCELoss, VGG19
 from models.CCPL import CCPL
 
+
 # Defines the GAN loss which uses either LSGAN or the regular GAN.
 # When LSGAN is used, it is basically same as MSELoss,
 # but it abstracts away the need to create the target label tensor
@@ -312,6 +313,49 @@ class VGG19(torch.nn.Module):
         return out
 
 
+class alexnet_MONCE(torch.nn.Module):
+    def __init__(self, requires_grad=False):
+        super(alexnet_MONCE, self).__init__()
+        alexnet_pretrained_features = torchvision.models.alexnet(pretrained=True).features
+
+        self.slice1 = torch.nn.Sequential()
+        self.slice2 = torch.nn.Sequential()
+        self.slice3 = torch.nn.Sequential()
+        self.slice4 = torch.nn.Sequential()
+        self.slice5 = torch.nn.Sequential()
+        self.N_slices = 5
+        for x in range(2):
+            self.slice1.add_module(str(x), alexnet_pretrained_features[x])
+        for x in range(2, 5):
+            self.slice2.add_module(str(x), alexnet_pretrained_features[x])
+        for x in range(5, 8):
+            self.slice3.add_module(str(x), alexnet_pretrained_features[x])
+        for x in range(8, 10):
+            self.slice4.add_module(str(x), alexnet_pretrained_features[x])
+        for x in range(10, 12):
+            self.slice5.add_module(str(x), alexnet_pretrained_features[x])
+        if not requires_grad:
+            for param in self.parameters():
+                param.requires_grad = False
+
+    def forward(self, X):
+        h = self.slice1(X)
+        h_relu1 = h
+        h = self.slice2(h)
+        h_relu2 = h
+        h = self.slice3(h)
+        h_relu3 = h
+        h = self.slice4(h)
+        h_relu4 = h
+        h = self.slice5(h)
+        h_relu5 = h
+        # alexnet_outputs = namedtuple("AlexnetOutputs", ['relu1', 'relu2', 'relu3', 'relu4', 'relu5'])
+        out = [h_relu1, h_relu2, h_relu3, h_relu4, h_relu5]
+        # out = alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
+
+        return out
+
+
 class VGG19_MoNCE(torch.nn.Module):
     def __init__(self, requires_grad=False):
         super().__init__()
@@ -346,8 +390,8 @@ class VGG19_MoNCE(torch.nn.Module):
 
 
 class CCPLoss(nn.Module):
-    def __init__(self,opt):
-        super(CCPLoss,self).__init__()
+    def __init__(self, opt):
+        super(CCPLoss, self).__init__()
         self.opt = opt
         self.vgg = VGG19_MoNCE().cuda()
         self.CCPL = CCPL()
@@ -363,18 +407,22 @@ class CCPLoss(nn.Module):
         return loss_ccp
 
 
-
 class MoNCELoss(nn.Module):
-    def __init__(self,opt):
+    def __init__(self, opt, f_net_name):
         super(MoNCELoss, self).__init__()
         self.opt = opt
-        self.vgg = VGG19_MoNCE().cuda()
+        self.f_net_name = f_net_name
+        if self.f_net_name == 'vgg':
+            self.f_net = VGG19_MoNCE().cuda()
+        elif self.f_net_name == 'alex':
+            self.f_net = alexnet_MONCE().cuda()
+        else:
+            self.f_net=None
+
         # self.criterion = nn.L1Loss()
         self.CoNCELoss = CoNCELoss()
         self.weights = [1.0 / 32, 1.0 / 16, 1.0 / 8, 1.0 / 4, 1.0]
         self.netF = define_F('xavier', 0.02, gpu_ids=[0])
-
-
 
     def forward(self, x, y):
         # input: x:fake_image(3,256,256), y:real_image(3,256,256)
@@ -385,7 +433,8 @@ class MoNCELoss(nn.Module):
             x_ = torch.stack([x, x, x], dim=1).squeeze()
         if y.shape[1] != 3:
             y_ = torch.stack([y, y, y], dim=1).squeeze()
-        x_vgg, y_vgg = self.vgg(x_), self.vgg(y_)
+
+        x_vgg, y_vgg = self.f_net(x_), self.f_net(y_)
         # 切256個patch
         # feat_k_pool[0](256,64) feat_k_pool[1](256,128) feat_k_pool[2](256,128) feat_k_pool[3](256,512) feat_k_pool[4](256,512)
 
