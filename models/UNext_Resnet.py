@@ -143,9 +143,9 @@ class Tokenized_ResNet(nn.Module):
 
         x = self.up(x)
 
+
         if len(self.res_blocks):
             x = self.res_blocks(x)
-
 
         if len(self.UNext_blocks):
             x = self.UNext_blocks(x)
