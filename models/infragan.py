@@ -56,7 +56,7 @@ class InfraGAN(BaseModel):
             self.ssim = None
 
         self.lpips = LPIPS(net=opt.lpips_model)
-        self.MoNCELoss = loss.MoNCELoss(opt)
+        self.MoNCELoss = loss.MoNCELoss(opt,f_net_name=opt.MoNCE_Net)
         self.perceptual_loss = loss.StyleLoss()
         self.CCPL_loss = loss.CCPLoss(opt)
         self.sobel_loss = loss_sobel.GradLoss()
