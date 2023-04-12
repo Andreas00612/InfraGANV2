@@ -10,6 +10,7 @@ import torchvision
 from torch.nn import init
 from models.conce import CoNCELoss, VGG19
 from models.CCPL import CCPL
+import kornia
 
 
 # Defines the GAN loss which uses either LSGAN or the regular GAN.
@@ -417,7 +418,7 @@ class MoNCELoss(nn.Module):
         elif self.f_net_name == 'alex':
             self.f_net = alexnet_MONCE().cuda()
         else:
-            self.f_net=None
+            self.f_net = None
 
         # self.criterion = nn.L1Loss()
         self.CoNCELoss = CoNCELoss()
@@ -500,6 +501,49 @@ class PatchSampleF(nn.Module):
                 x_sample = x_sample.permute(0, 2, 1).reshape([B, x_sample.shape[-1], H, W])
             return_feats.append(x_sample)
         return return_feats, return_ids
+
+
+class Gaussian_Pyramid(nn.Module):
+    def __init__(self, opt):
+        super(Gaussian_Pyramid, self).__init__()
+        self.opt = opt
+        self.criterionL1 = torch.nn.L1Loss()
+        pass
+
+    def add_Gaussian_blur2d(self, img):
+        octave1_layer2_img = kornia.filters.gaussian_blur2d(img, (3, 3), (1, 1))
+        octave1_layer3_img = kornia.filters.gaussian_blur2d(octave1_layer2_img, (3, 3), (1, 1))
+        octave1_layer4_img = kornia.filters.gaussian_blur2d(octave1_layer3_img, (3, 3), (1, 1))
+        octave1_layer5_img = kornia.filters.gaussian_blur2d(octave1_layer4_img, (3, 3), (1, 1))
+        octave2_layer1_img = kornia.filters.blur_pool2d(octave1_layer5_img, 1, stride=2)
+        return octave2_layer1_img
+
+    def forward(self,real_B,fake_B):
+        self.loss_G = 0
+        self.fake_B = fake_B
+        self.real_B = real_B
+
+
+        self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_l1
+        self.loss_G += self.loss_G_L1
+        if 'L2' in self.opt.pattern:
+            octave2_layer1_fake = self.add_Gaussian_blur2d(self.fake_B)
+            octave2_layer1_real = self.add_Gaussian_blur2d(self.real_B)
+            self.loss_G_L2 = self.criterionL1(octave2_layer1_fake, octave2_layer1_real) * self.opt.weight_L2
+            self.loss_G += self.loss_G_L2
+
+            if 'L3' in self.opt.pattern:
+                octave3_layer1_fake = self.add_Gaussian_blur2d(octave2_layer1_fake)
+                octave3_layer1_real = self.add_Gaussian_blur2d(octave2_layer1_real)
+                self.loss_G_L3 = self.criterionL1(octave3_layer1_fake, octave3_layer1_real) * self.opt.weight_L3
+                self.loss_G += self.loss_G_L3
+
+                if 'L4' in self.opt.pattern:
+                    octave4_layer1_fake = self.add_Gaussian_blur2d(octave3_layer1_fake)
+                    octave4_layer1_real = self.add_Gaussian_blur2d(octave3_layer1_real)
+                    self.loss_G_L4 = self.criterionL1(octave4_layer1_fake, octave4_layer1_real) * self.opt.weight_L4
+                    self.loss_G += self.loss_G_L4
+        return self.loss_G
 
 
 def init_weights(net, init_type='normal', init_gain=0.02, debug=False):
