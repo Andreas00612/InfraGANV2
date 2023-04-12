@@ -7,7 +7,7 @@ from collections import OrderedDict
 import torch
 import os
 from eval import Evalulate
-from tqdm import tqdm
+
 
 '''
 To resolve the multi-threaded problem.
@@ -121,5 +121,3 @@ if __name__ == '__main__':
                            (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
     visualizer.train_log_writer.close()
     visualizer.val_log_writer.close()
-    print('a')
-    print('b')

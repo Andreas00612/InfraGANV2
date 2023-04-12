@@ -9,10 +9,10 @@ import cv2
 from data.build import DataAugmentation
 def make_thermal_dataset_kaist(mode, path=None, text_path=None, val_text_path=None):
     if path is None:
-        path = 'datasets/KAIST/KAIST-dataset/kaist-cvpr15/images/'
+        path = 'dataset/kaist-cvpr15/images/'
     if text_path is None:
         # text_path = '/cta/users/mehmet/rgbt-ped-detection/data/scripts/imageSets/train-all-04.txt'
-        text_path = 'datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/test-all-20.txt'
+        text_path = 'dataset/kaist-cvpr15/imageSets/test-all-20.txt'
 
     if mode == 'test':
         text_path = val_text_path

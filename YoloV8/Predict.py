@@ -5,7 +5,7 @@ import os
 
 
 # Predict with the model
-#results = model('datasets/KAIST/KAIST-dataset/kaist-cvpr15/images/set00/V000/lwir/I00000.jpg')  # predict on an image
+#results = model('datasets/KAIST/dataset/kaist-cvpr15/images/set00/V000/lwir/I00000.jpg')  # predict on an image
 
 # print("[%s] dataset is loading..." % mode)
 # AB_paths = make_thermal_dataset_kaist('train', path=dataroot, text_path=opt.text_path,
