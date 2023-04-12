@@ -56,11 +56,12 @@ class InfraGAN(BaseModel):
             self.ssim = None
 
         self.lpips = LPIPS(net=opt.lpips_model)
-        self.MoNCELoss = loss.MoNCELoss(opt,f_net_name=opt.MoNCE_Net)
+        self.MoNCELoss = loss.MoNCELoss(opt, f_net_name=opt.MoNCE_Net)
         self.perceptual_loss = loss.StyleLoss()
         self.CCPL_loss = loss.CCPLoss(opt)
         self.sobel_loss = loss_sobel.GradLoss()
         self.MSE_loss = nn.MSELoss()
+        self.GP_loss = loss.Gaussian_Pyramid(opt=opt)
 
         # initialize optimizers
         if self.isTrain:
@@ -109,7 +110,6 @@ class InfraGAN(BaseModel):
             input_A = input_A.cuda(self.gpu_ids[0], non_blocking=True)
             input_B = input_B.cuda(self.gpu_ids[0], non_blocking=True)
             # input_A_Canny = input_A_Canny.cuda(self.gpu_ids[0], non_blocking=True)
-
 
         self.input_A = input_A
         self.input_B = input_B
@@ -237,6 +237,10 @@ class InfraGAN(BaseModel):
             self.loss_G_MSE = self.MSE_loss(self.real_B, self.fake_B)
             self.loss_G['MSE'] = self.opt.lambda_MSE * self.loss_G_MSE
 
+        if self.opt.loss_GP:
+            self.loss_G_GP = self.GP_loss(self.real_B, self.fake_B)
+            self.loss_G['GP'] = self.loss_G_GP
+
         if self.opt.loss_tv:
             diff_i = torch.sum(torch.abs(self.fake_B[:, :, :, 1:] - self.fake_B[:, :, :, :-1]))
             diff_j = torch.sum(torch.abs(self.fake_B[:, :, 1:, :] - self.fake_B[:, :, :-1, :]))
@@ -327,6 +331,10 @@ class InfraGAN(BaseModel):
         if opt.loss_sobel:
             dict_errors['loss_G_sobel'] = 0
 
+        # loss Gaussian Pyramid
+        if opt.loss_GP:
+            dict_errors['loss_G_GP'] = 0
+
         # if opt.loss_MSE:
         #     dict_errors['loss_G_MSE'] = 0
 
@@ -340,7 +348,7 @@ class InfraGAN(BaseModel):
         #                     ('loss_G_sobel', 0),
         #                     ])
 
-    def get_current_visuals(self,normalize=False):
+    def get_current_visuals(self, normalize=False):
         real_A = util.tensor2im(self.real_A.data)
         if normalize:
             fake_B = util.thermal_tensor2im_Normalize(self.fake_B.data)
@@ -353,8 +361,6 @@ class InfraGAN(BaseModel):
     def save(self, label):
         self.save_network(self.netG, 'G', label, self.gpu_ids)
         self.save_network(self.netD, 'D', label, self.gpu_ids)
-
-
 
     def sobel_conv(self, input):
         b, c, h, w = input.shape

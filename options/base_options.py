@@ -69,7 +69,7 @@ class BaseOptions():
         self.parser.add_argument('--token_channel',type=int,default=256)
         self.parser.add_argument('--shift_size',type=int,default=5)
         self.parser.add_argument('--lpips_model',type=str, default='alex')
-        self.parser.add_argument('--MoNCE_Net',type=str, default=None)
+        self.parser.add_argument('--MoNCE_Net',type=str, default='vgg')
 
         ###   data Augmentation  ###
         self.parser.add_argument('--no_flip', action='store_true',

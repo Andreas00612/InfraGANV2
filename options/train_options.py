@@ -47,7 +47,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--n_Gen', type=int, default=2)
         self.parser.add_argument('--D_input', type=str, default='cat')
 
-        #self.parser.add_argument('--drop_rate', type=float, default=-1)
+        # self.parser.add_argument('--drop_rate', type=float, default=-1)
         # self.parser.add_argument('--n_layers_D',type=int ,default=4)
 
         #### add loss function ####
@@ -84,7 +84,11 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--loss_tv', action='store_true')
         self.parser.add_argument('--lambda_tv', type=float, default=10.0)
 
-
+        self.parser.add_argument('--loss_GP', action='store_true')
+        # self.parser.add_argument('--weight_conv', type=float, default=100)
+        # self.parser.add_argument('--weight_sobel', type=float, default=50)
+        self.parser.add_argument('--weight_L2', type=float, default=25)
+        self.parser.add_argument('--weight_L3', type=float, default=25)
+        self.parser.add_argument('--weight_L4', type=float, default=25)
+        self.parser.add_argument('--pattern', type=str, default='L1_L2_L3_L4=', help='L1 | L2 | L3 | L4 |')
         self.isTrain = True
-
-
