@@ -71,7 +71,7 @@ def structure_comparison_func(img1, img2, window_size=11, window=None, size_aver
     return ret
 
 
-def ssim(img1, img2, window_size=11, window=None, size_average=True, full=False, val_range=1):
+def ssim(img1, img2, window_size=11, window=None, size_average=True, full=False, val_range=2):
     # Value range can be different from 255. Other common ranges are 1 (sigmoid) and 2 (tanh).
     if val_range is None:
         if torch.max(img1) > 128:
@@ -83,7 +83,7 @@ def ssim(img1, img2, window_size=11, window=None, size_average=True, full=False,
             min_val = -1
         else:
             min_val = 0
-        L = 2  # max_val - min_val
+        L = 2 # max_val - min_val
     else:
         L = val_range
 

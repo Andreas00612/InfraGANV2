@@ -135,9 +135,8 @@ def evaluate(Resize=False):
                                     cls += [3]
                             else:
                                 cls += [4]
-        if Resize:
-            model.real_B = transforms.Resize((640, 512))(model.real_B)
-            model.fake_B = transforms.Resize((640, 512))(model.fake_B)
+
+
         im_real_B = util.thermal_tensor2im(model.real_B.clone())
         im_fake_B = util.thermal_tensor2im(model.fake_B.clone())
 
