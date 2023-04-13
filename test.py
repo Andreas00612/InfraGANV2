@@ -9,7 +9,7 @@ from data.thermal_dataset import ThermalDataset
 from data.flir_dataset import FlirDataset
 from lpips.lpips import LPIPS
 from ssim import MSSSIM, SSIM
-
+import torchvision.transforms as transforms
 # import pydevd_pycharm
 # pydevd_pycharm.settrace('10.201.182.31', port=2525, stdoutToServer=True, stderrToServer=True)
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     elif opt.dataset_mode == 'KAIST':
         dataset = ThermalDataset()
         # mode = '/cta/users/mehmet/rgbt-ped-detection/data/scripts/imageSets/test-all-20.txt'
-        dataset.initialize(opt, mode=mode)
+        dataset.initialize(opt, mode=mode,Resize=True)
     elif opt.dataset_mode == 'FLIR':
         dataset = FlirDataset()
         dataset.initialize(opt, mode="test")
@@ -60,6 +60,9 @@ if __name__ == '__main__':
             else:
                 raise ValueError("Dataset [%s] not recognized." % opt.dataset_mode)
             model.test(inference=True)
+            model.real_B = transforms.Resize((512, 640))(model.real_B)
+            model.real_A = transforms.Resize((512, 640))(model.real_A)
+            model.fake_B = transforms.Resize((512, 640))(model.fake_B)
             visuals = model.get_current_visuals(normalize=True)
             img_path = model.get_image_paths()[0]
             visualizer.save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio)

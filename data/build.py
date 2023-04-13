@@ -127,12 +127,13 @@ class My_BrightAug():
 
 class My_Normalize():
     def __init__(self):
+        # self.resize = Resize
         pass
 
     def __call__(self, infra, rgb, Resize=False):
         if Resize:
-            infra  = transforms.Resize(512)(infra)
-            rgb = transforms.Resize(512)(rgb)
+            infra  = transforms.Resize((512,512))(infra)
+            rgb = transforms.Resize((512,512))(rgb)
         else:
             infra = transforms.CenterCrop(512)(infra)
             rgb = transforms.CenterCrop(512)(rgb)
