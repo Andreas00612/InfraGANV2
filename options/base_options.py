@@ -16,11 +16,11 @@ class BaseOptions():
                                  help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
 
         self.parser.add_argument('--text_path', help='path to text file for KAIST datasets',
-                                 default='dataset/kaist-cvpr15/imageSets/1.txt')
+                                 default='datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/1.txt')
 
 
         self.parser.add_argument('--val_text_path',
-                                 default='dataset/kaist-cvpr15/imageSets/2.txt',
+                                 default='datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/2.txt',
                                  help='path to text file for KAIST validation set')
         self.parser.add_argument('--batchSize', type=int, default=1, help='input batch size')
         self.parser.add_argument('--loadSize', type=int, default=542, help='scale images to this size')
