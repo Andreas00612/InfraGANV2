@@ -8,7 +8,7 @@ from models.multiresunet import MultiResUnetGenerator
 from models.unetgan.unet_discriminator import Unet_DiscriminatorGenerator
 from models.discriminator import SesameNLayerDiscriminator
 from models.UNeXt import UNext
-from models.UNext_Resnet import Tokenized_ResNet
+from models.UNext_Resnet import Tokenized_ResNet,wavelet_Genetator
 
 
 ###############################################################################
@@ -140,7 +140,7 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
         init_flag = False
 
     elif which_model_netG == 'Tokenized_ResNet_0_9':
-        netG = Tokenized_ResNet(input_nc, num_features=64,  num_residuals=9, num_mlp_block=9, out_channels=1, img_size=512, opt=opt, token_channel=opt.token_channel,
+        netG = Tokenized_ResNet(input_nc, num_features=64,  num_residuals=0, num_mlp_block=9, out_channels=1, img_size=512, opt=opt, token_channel=opt.token_channel,
                                 shift_type='shiftedBlock', shift_size=opt.shift_size)
         init_flag = False
 
@@ -151,6 +151,12 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     elif which_model_netG == 'Tokenized_ResNet9_Conv1d':
         netG = Tokenized_ResNet(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1, img_size=512, opt=opt,
                                 shift_type='shiftedBlock_L2', token_channel=opt.token_channel)
+        init_flag = False
+
+    elif which_model_netG == 'wavelet_Genetator':
+        netG = wavelet_Genetator(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
+                                img_size=512, opt=opt, token_channel=opt.token_channel,
+                                shift_type='shiftedBlock', shift_size=opt.shift_size)
         init_flag = False
 
 

@@ -124,15 +124,6 @@ class InfraGAN(BaseModel):
         self.fake_B = self.netG(self.real_A)
         self.real_B = Variable(self.input_B)
 
-        # if self.opt.loss_struc:  ##只有這條件會需要用到A_gray
-        #     self.real_A_gray = Variable(self.input_A_gray)
-
-        # if self.opt.input_nc == 3 and self.opt.loss_identity:
-        #     self.identity_fake_B = self.netG(self.oneD2threeD(self.real_B))
-        #
-        # elif self.opt.input_nc == 1 and self.opt.loss_identity:
-        #     self.identity_fake_B = self.netG(self.real_B)
-
     def oneD2threeD(self, x):
         if x.shape[1] != 3:
             x_3 = torch.stack([x, x, x], dim=1).squeeze()
@@ -203,7 +194,11 @@ class InfraGAN(BaseModel):
 
         if self.opt.loss_monce:
             self.loss_G_MoNCE = self.MoNCELoss(self.fake_B.clone(), self.real_B.clone()).mean()
-            self.loss_G['loss_G_MoNCE'] = self.opt.lambda_monce * self.loss_G_MoNCE
+            if self.opt.loss_monce_unpair:
+                self.loss_G_MoNCE_N = self.MoNCELoss(self.fake_B.clone(), self.real_A.clone()).mean()
+            else:
+                self.loss_G_MoNCE_N = 0
+            self.loss_G['loss_G_MoNCE'] = self.opt.lambda_monce * (self.loss_G_MoNCE + self.loss_G_MoNCE_N)
 
         if self.opt.loss_identity:
             self.loss_G_identity = self.criterionL1(self.real_B, self.identity_fake_B)
@@ -227,10 +222,7 @@ class InfraGAN(BaseModel):
             self.loss_G['perceptual'] = self.opt.lambda_perceptual * self.loss_G_perceptual
 
         if self.opt.loss_CCP:
-            if self.opt.dataset_mode == 'KAIST':
-                self.loss_G_CCP = self.CCPL_loss(self.real_B, self.fake_B)
-            elif self.opt.dataset_mode == 'FLIR':
-                self.loss_G_CCP = self.CCPL_loss(self.real_A, self.fake_B)
+            self.loss_G_CCP = self.CCPL_loss(self.real_B, self.fake_B)
             self.loss_G['CCP'] = self.opt.lambda_CCP * self.loss_G_CCP
 
         if self.opt.loss_mse:

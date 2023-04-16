@@ -4,8 +4,8 @@ import torch
 from torch import nn
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 import math
-from UNeXt import shiftedBlock, OverlapPatchEmbed, shiftedBlock_L
-from wavelet import get_wav, WaveUnpool
+from models.UNeXt import shiftedBlock, OverlapPatchEmbed, shiftedBlock_L
+from models.wavelet import get_wav, WaveUnpool
 
 
 class ConvBlock(nn.Module):
@@ -232,11 +232,11 @@ class wavelet_Genetator(nn.Module):
         x = self.up(x)
         if len(self.UNext_blocks):
             x = self.UNext_blocks(x)
-        x = self.down(x)
+        x1 = self.down(x)
 
 
-        x2 = self.up_blocks_1(x)
-        x_deconv = self.recon_block1(x, LH2, HL2, HH2)
+        x2 = self.up_blocks_1(x1)
+        x_deconv = self.recon_block1(x1, LH2, HL2, HH2)
         x_deconv = self.Conv1(x_deconv)
         x3 = x2 + x_deconv
 
@@ -245,7 +245,6 @@ class wavelet_Genetator(nn.Module):
         x_deconv = self.recon_block2(x3, LH1, HL1, HH1)
         x_deconv = self.Conv2(x_deconv)
         x5 = x4 + x_deconv
-
 
 
         return torch.tanh(self.last(x5))

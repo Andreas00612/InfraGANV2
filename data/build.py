@@ -61,14 +61,14 @@ class power_low_transform(object):
 
 
 class Gaussion_noise(object):
-    def __init__(self, p=0.5, mean=0, variance=0.01):
+    def __init__(self, p=0.7, mean=0, variance=0.01):
         self.prop = p
         self.mean = mean
         self.variance = variance
         self.noise_level = random.random
 
     def __call__(self, img):
-        noise_level = random.randint(30, 100)
+        noise_level = random.randint(50, 150)
         if not random.random() <= self.prop:
             return img
         else:

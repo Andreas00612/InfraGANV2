@@ -432,21 +432,22 @@ class MoNCELoss(nn.Module):
 
         if x.shape[1] != 3:
             x_ = torch.stack([x, x, x], dim=1).squeeze()
+        else:
+            x_ = x
         if y.shape[1] != 3:
             y_ = torch.stack([y, y, y], dim=1).squeeze()
+        else:
+            y_ = y
 
         x_vgg, y_vgg = self.f_net(x_), self.f_net(y_)
-        # 切256個patch
-        # feat_k_pool[0](256,64) feat_k_pool[1](256,128) feat_k_pool[2](256,128) feat_k_pool[3](256,512) feat_k_pool[4](256,512)
 
+        # 切256個patch
         feat_k_pool, sample_ids = self.netF(y_vgg, 256, None)
-        feat_q_pool, _ = self.netF(x_vgg, 256, sample_ids)  # synthesis
+        feat_q_pool, _ = self.netF(x_vgg, 256, sample_ids)  # synthesis(Fake)
 
         loss = 0
         for i in range(len(x_vgg)):
             loss += self.weights[i] * self.CoNCELoss(feat_q_pool[i], feat_k_pool[i], i)
-
-        # print('******', loss.mean())
 
         return loss
 
@@ -518,11 +519,10 @@ class Gaussian_Pyramid(nn.Module):
         octave2_layer1_img = kornia.filters.blur_pool2d(octave1_layer5_img, 1, stride=2)
         return octave2_layer1_img
 
-    def forward(self,real_B,fake_B):
+    def forward(self, real_B, fake_B):
         self.loss_G = 0
         self.fake_B = fake_B
         self.real_B = real_B
-
 
         self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_l1
         self.loss_G += self.loss_G_L1

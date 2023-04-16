@@ -59,7 +59,9 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--lambda_lpips', type=float, default=50.0)
 
         self.parser.add_argument('--loss_monce', action='store_true')
+        self.parser.add_argument('--loss_monce_unpair',action='store_true')
         self.parser.add_argument('--lambda_monce', type=float, default=10.0)
+
 
         self.parser.add_argument('--loss_identity', action='store_true')
         self.parser.add_argument('--lambda_id', type=float, default=10.0)
