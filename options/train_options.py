@@ -75,8 +75,8 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--loss_perceptual', action='store_true')
         self.parser.add_argument('--lambda_perceptual', type=float, default=10.0)
 
-        self.parser.add_argument('--loss_mse', action='store_true')
-        self.parser.add_argument('--lambda_mse', type=float, default=50.0)
+        self.parser.add_argument('--loss_huber', action='store_true')
+        self.parser.add_argument('--lambda_huber', type=float, default=50.0)
 
         self.parser.add_argument('--loss_CCP', action='store_true')
         self.parser.add_argument('--lambda_CCP', type=float, default=5.0)

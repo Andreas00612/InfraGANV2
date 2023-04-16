@@ -63,6 +63,7 @@ class InfraGAN(BaseModel):
         self.MSE_loss = nn.MSELoss()
         self.GP_loss = loss.Gaussian_Pyramid(opt=opt)
 
+
         # initialize optimizers
         if self.isTrain:
             self.schedulers = []
@@ -225,9 +226,9 @@ class InfraGAN(BaseModel):
             self.loss_G_CCP = self.CCPL_loss(self.real_B, self.fake_B)
             self.loss_G['CCP'] = self.opt.lambda_CCP * self.loss_G_CCP
 
-        if self.opt.loss_mse:
-            self.loss_G_MSE = self.MSE_loss(self.real_B, self.fake_B)
-            self.loss_G['MSE'] = self.opt.lambda_MSE * self.loss_G_MSE
+        if self.opt.loss_huber:
+            self.loss_G_huber = loss.huber_loss(self.real_B, self.fake_B)
+            self.loss_G['loss_G_huber'] = self.opt.lambda_huber * self.loss_G_huber
 
         if self.opt.loss_GP:
             self.loss_G_GP = self.GP_loss(self.real_B, self.fake_B)
@@ -327,8 +328,8 @@ class InfraGAN(BaseModel):
         if opt.loss_GP:
             dict_errors['loss_G_GP'] = 0
 
-        # if opt.loss_MSE:
-        #     dict_errors['loss_G_MSE'] = 0
+        if opt.loss_huber:
+            dict_errors['loss_G_huber'] = 0
 
         return OrderedDict(dict_errors)
 

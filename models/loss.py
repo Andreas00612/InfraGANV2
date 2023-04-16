@@ -545,6 +545,16 @@ class Gaussian_Pyramid(nn.Module):
                     self.loss_G += self.loss_G_L4
         return self.loss_G
 
+def huber_loss(y_true, y_pred, delta=1.0):
+    # 計算絕對誤差
+    abs_error = torch.abs(y_true - y_pred)
+    # 將大於delta的誤差平方
+    quadratic = torch.min(abs_error, torch.tensor(delta))
+    linear = abs_error - quadratic
+    # 計算Huber Loss
+    loss = 0.5 * quadratic ** 2 + delta * linear
+    loss = torch.mean(loss)
+    return loss
 
 def init_weights(net, init_type='normal', init_gain=0.02, debug=False):
     """Initialize network weights.
