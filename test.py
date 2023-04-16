@@ -10,6 +10,7 @@ from data.flir_dataset import FlirDataset
 from lpips.lpips import LPIPS
 from ssim import MSSSIM, SSIM
 import torchvision.transforms as transforms
+
 # import pydevd_pycharm
 # pydevd_pycharm.settrace('10.201.182.31', port=2525, stdoutToServer=True, stderrToServer=True)
 
@@ -27,7 +28,7 @@ if __name__ == '__main__':
     elif opt.dataset_mode == 'KAIST':
         dataset = ThermalDataset()
         # mode = '/cta/users/mehmet/rgbt-ped-detection/data/scripts/imageSets/test-all-20.txt'
-        dataset.initialize(opt, mode=mode,Resize=True)
+        dataset.initialize(opt, mode=mode, Resize=True)
     elif opt.dataset_mode == 'FLIR':
         dataset = FlirDataset()
         dataset.initialize(opt, mode="test")
@@ -60,21 +61,25 @@ if __name__ == '__main__':
             else:
                 raise ValueError("Dataset [%s] not recognized." % opt.dataset_mode)
             model.test(inference=True)
-            model.real_B = transforms.Resize((512, 640))(model.real_B)
-            model.real_A = transforms.Resize((512, 640))(model.real_A)
-            model.fake_B = transforms.Resize((512, 640))(model.fake_B)
+            # model.real_B = transforms.Resize((512, 640))(model.real_B)
+            # model.real_A = transforms.Resize((512, 640))(model.real_A)
+            # model.fake_B = transforms.Resize((512, 640))(model.fake_B)
             visuals = model.get_current_visuals(normalize=True)
             img_path = model.get_image_paths()[0]
-            visualizer.save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio)
-            ssim = (ssim * i + ssim_obj(model.real_B.clone(), model.fake_B.clone()).item()) / (i + 1)
-            lpips = (lpips * i + lpips_obj(model.real_B.cpu().clone(), model.fake_B.cpu().clone()).mean().item()) / (i + 1)
-            print('%04d/%d: process image... %s -> ssim:%.4f , lpips:%.4f' % (i, len(dataset), img_path, ssim, lpips))
+            ssim_now = ssim_obj(model.real_B.clone(), model.fake_B.clone()).item()
+            ssim = (ssim * i + ssim_now) / (i + 1)
+            lpips_now = lpips_obj(model.real_B.cpu().clone(), model.fake_B.cpu().clone()).mean().item()
+            lpips = (lpips * i + lpips_now) / (i + 1)
+            if lpips_now > 0.24:
+                visualizer.save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio)
+            print('%04d/%d: process image... %s -> ssim:%.4f , lpips:%.4f' % (i, len(dataset), img_path, ssim_now, lpips_now))
             # with open(os.path.join(web_dir, 'result.txt'), "a") as log_file:
             #     log_file.write(f'ssim:{ssim:.3f},lpips:{lpips:.3f} \n')
     webpage.save()
 
     from evaluate import evaluate
-    evaluate(Resize=False)
+
+    # evaluate(Resize=False)
 
     # TODO: make inferences to a video
     # import cv2

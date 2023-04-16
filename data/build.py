@@ -6,7 +6,7 @@ import torchvision.transforms.functional as F
 
 
 class DataAugmentation():
-    def __init__(self, opt=None, mode='train',Resize=False):
+    def __init__(self, opt=None, mode='train'):
         self.opt = opt
         self.mode = mode
         self.RandomRotation = My_Rotation((-5, 5))
@@ -131,12 +131,12 @@ class My_Normalize():
         pass
 
     def __call__(self, infra, rgb, Resize=False):
-        if Resize:
-            infra  = transforms.Resize((512,512))(infra)
-            rgb = transforms.Resize((512,512))(rgb)
-        else:
-            infra = transforms.CenterCrop(512)(infra)
-            rgb = transforms.CenterCrop(512)(rgb)
+        # if Resize:
+        #     infra  = transforms.Resize((512,512))(infra)
+        #     rgb = transforms.Resize((512,512))(rgb)
+        # else:
+        infra = transforms.CenterCrop(512)(infra)
+        rgb = transforms.CenterCrop(512)(rgb)
 
         infra = transforms.ToTensor()(infra.copy()).float()
         rgb = transforms.ToTensor()(rgb.copy()).float()

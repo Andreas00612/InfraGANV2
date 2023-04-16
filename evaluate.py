@@ -58,7 +58,7 @@ def evaluate(Resize=False):
     # opt.batchSize = opt.batchSize  # test code only supports batchSize = 1
     opt.serial_batches = True  # no shuffle
     opt.no_flip = True  # no flip
-    opt.val_text_path = 'datasets/KAIST/dataset/kaist-cvpr15/imageSets/test-all-20.txt'
+    #opt.val_text_path = 'datasets/KAIST/dataset/kaist-cvpr15/imageSets/test-all-20.txt'
     mode = "test"
     print(opt.dataset_mode)
     if opt.dataset_mode == 'VEDAI':
@@ -67,7 +67,7 @@ def evaluate(Resize=False):
     elif opt.dataset_mode == 'KAIST':
         dataset = ThermalDataset()
         dataset.initialize(opt, mode=mode,
-                           val_text_path='datasets/KAIST/dataset/kaist-cvpr15/imageSets/val_set_new.txt')  # val_set_new.txt test_set_four
+                           val_text_path='datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/val_set_new.txt')  # val_set_new.txt test_set_four
     elif opt.dataset_mode == 'FLIR':
         dataset = FlirDataset()
         dataset.initialize(opt, test=True)

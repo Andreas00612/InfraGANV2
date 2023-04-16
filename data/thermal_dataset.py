@@ -66,7 +66,7 @@ class ThermalDataset(BaseDataset):
         self.dir_AB = os.path.join(opt.dataroot, opt.phase)
         self.val_text_path = val_text_path if val_text_path else opt.val_text_path
         if not no_trans:
-            self.trans = DataAugmentation(mode=mode,opt=opt,Resize=Resize)
+            self.trans = DataAugmentation(mode=mode,opt=opt)
 
 
         if opt.dataset_mode == 'VEDAI':
