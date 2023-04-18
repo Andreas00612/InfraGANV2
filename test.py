@@ -70,16 +70,14 @@ if __name__ == '__main__':
             ssim = (ssim * i + ssim_now) / (i + 1)
             lpips_now = lpips_obj(model.real_B.cpu().clone(), model.fake_B.cpu().clone()).mean().item()
             lpips = (lpips * i + lpips_now) / (i + 1)
-            if lpips_now > 0.24:
-                visualizer.save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio)
+            visualizer.save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio)
             print('%04d/%d: process image... %s -> ssim:%.4f , lpips:%.4f' % (i, len(dataset), img_path, ssim_now, lpips_now))
             # with open(os.path.join(web_dir, 'result.txt'), "a") as log_file:
             #     log_file.write(f'ssim:{ssim:.3f},lpips:{lpips:.3f} \n')
     webpage.save()
 
     from evaluate import evaluate
-
-    # evaluate(Resize=False)
+    evaluate(Resize=False)
 
     # TODO: make inferences to a video
     # import cv2

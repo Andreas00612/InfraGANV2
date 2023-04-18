@@ -161,9 +161,9 @@ class Tokenized_ResNet(nn.Module):
 
 
 class WavePool(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels,out_channels):
         super(WavePool, self).__init__()
-        self.LL, self.LH, self.HL, self.HH = get_wav(in_channels)
+        self.LL, self.LH, self.HL, self.HH = get_wav(in_channels,out_channels)
 
     def forward(self, x):
         return self.LL(x), self.LH(x), self.HL(x), self.HH(x)
@@ -180,12 +180,7 @@ class wavelet_Genetator(nn.Module):
             nn.InstanceNorm2d(num_features),
             nn.ReLU(inplace=True),
         )
-        # self.down_blocks = nn.ModuleList(
-        #     [
-        #         ConvBlock(num_features, num_features * 2, kernel_size=3, stride=2, padding=1),
-        #         ConvBlock(num_features * 2, num_features * 4, kernel_size=3, stride=2, padding=1),
-        #     ]
-        # )
+
         self.down_block_1 = ConvBlock(num_features, num_features * 2, kernel_size=3, stride=2, padding=1)
         self.down_block_2 = ConvBlock(num_features * 2, num_features * 4, kernel_size=3, stride=2, padding=1)
         self.up = nn.Conv1d(in_channels=num_features * 4, out_channels=token_channel, kernel_size=(3, 3), padding=1)
@@ -207,8 +202,8 @@ class wavelet_Genetator(nn.Module):
         self.last = nn.Conv2d(num_features * 1, out_channels, kernel_size=7, stride=1, padding=3,
                               padding_mode="reflect")
 
-        self.pool1 = WavePool(64).cuda()
-        self.pool2 = WavePool(128).cuda()
+        self.pool1 = WavePool(in_channels=64,out_channels=128).cuda()
+        self.pool2 = WavePool(in_channels=128,out_channels=256).cuda()
 
         self.recon_block1 = WaveUnpool(256, "sum").cuda()
         self.recon_block2 = WaveUnpool(128, "sum").cuda()

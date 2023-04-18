@@ -62,6 +62,7 @@ class InfraGAN(BaseModel):
         self.sobel_loss = loss_sobel.GradLoss()
         self.MSE_loss = nn.MSELoss()
         self.GP_loss = loss.Gaussian_Pyramid(opt=opt)
+        self.huber_loss = nn.SmoothL1Loss(beta=0.5, reduction='mean')
 
 
         # initialize optimizers
@@ -227,12 +228,12 @@ class InfraGAN(BaseModel):
             self.loss_G['CCP'] = self.opt.lambda_CCP * self.loss_G_CCP
 
         if self.opt.loss_huber:
-            self.loss_G_huber = loss.huber_loss(self.real_B, self.fake_B)
+            self.loss_G_huber = self.huber_loss(self.real_B, self.fake_B)
             self.loss_G['loss_G_huber'] = self.opt.lambda_huber * self.loss_G_huber
 
         if self.opt.loss_GP:
             self.loss_G_GP = self.GP_loss(self.real_B, self.fake_B)
-            self.loss_G['GP'] = self.loss_G_GP
+            self.loss_G['loss_G_GP'] = self.loss_G_GP
 
         if self.opt.loss_tv:
             diff_i = torch.sum(torch.abs(self.fake_B[:, :, :, 1:] - self.fake_B[:, :, :, :-1]))

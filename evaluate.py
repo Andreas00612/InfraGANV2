@@ -59,6 +59,7 @@ def evaluate(Resize=False):
     opt.serial_batches = True  # no shuffle
     opt.no_flip = True  # no flip
     #opt.val_text_path = 'datasets/KAIST/dataset/kaist-cvpr15/imageSets/test-all-20.txt'
+    val_text_path = 'datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/val_set_new.txt'
     mode = "test"
     print(opt.dataset_mode)
     if opt.dataset_mode == 'VEDAI':
@@ -190,7 +191,7 @@ def evaluate(Resize=False):
     txt_dir = os.path.join(opt.results_dir, opt.name, '%s_%s_%s' % (opt.dataset_mode, opt.phase, opt.which_epoch))
     print("\n txt_dir : ", txt_dir)
 
-    test_basename = os.path.basename(opt.val_text_path).split('.')[0]
+    test_basename = os.path.basename(val_text_path).split('.')[0]
 
     text_name = os.path.join(txt_dir, test_basename + '_result.txt')
     with open(text_name, "a") as log_file:
