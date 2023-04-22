@@ -508,7 +508,12 @@ class Gaussian_Pyramid(nn.Module):
     def __init__(self, opt):
         super(Gaussian_Pyramid, self).__init__()
         self.opt = opt
-        self.criterionL1 = torch.nn.L1Loss()
+        if opt.GP_loss_type == 'L1':
+            self.criterion = torch.nn.L1Loss()
+        elif opt.GP_loss_type == 'huber':
+            self.criterion = torch.nn.SmoothL1Loss(beta=0.5, reduction='mean')
+        else:
+            raise ValueError("type error of Gauss Pyramid loss")
         pass
 
     def add_Gaussian_blur2d(self, img):
@@ -524,24 +529,24 @@ class Gaussian_Pyramid(nn.Module):
         self.fake_B = fake_B
         self.real_B = real_B
 
-        self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_l1
+        self.loss_G_L1 = self.criterion(self.fake_B, self.real_B) * self.opt.lambda_l1
         self.loss_G += self.loss_G_L1
         if 'L2' in self.opt.pattern:
             octave2_layer1_fake = self.add_Gaussian_blur2d(self.fake_B)
             octave2_layer1_real = self.add_Gaussian_blur2d(self.real_B)
-            self.loss_G_L2 = self.criterionL1(octave2_layer1_fake, octave2_layer1_real) * self.opt.weight_L2
+            self.loss_G_L2 = self.criterion(octave2_layer1_fake, octave2_layer1_real) * self.opt.weight_L2
             self.loss_G += self.loss_G_L2
 
             if 'L3' in self.opt.pattern:
                 octave3_layer1_fake = self.add_Gaussian_blur2d(octave2_layer1_fake)
                 octave3_layer1_real = self.add_Gaussian_blur2d(octave2_layer1_real)
-                self.loss_G_L3 = self.criterionL1(octave3_layer1_fake, octave3_layer1_real) * self.opt.weight_L3
+                self.loss_G_L3 = self.criterion(octave3_layer1_fake, octave3_layer1_real) * self.opt.weight_L3
                 self.loss_G += self.loss_G_L3
 
                 if 'L4' in self.opt.pattern:
                     octave4_layer1_fake = self.add_Gaussian_blur2d(octave3_layer1_fake)
                     octave4_layer1_real = self.add_Gaussian_blur2d(octave3_layer1_real)
-                    self.loss_G_L4 = self.criterionL1(octave4_layer1_fake, octave4_layer1_real) * self.opt.weight_L4
+                    self.loss_G_L4 = self.criterion(octave4_layer1_fake, octave4_layer1_real) * self.opt.weight_L4
                     self.loss_G += self.loss_G_L4
         return self.loss_G
 
