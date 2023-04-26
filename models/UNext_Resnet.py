@@ -192,6 +192,9 @@ class wavelet_Genetator(nn.Module):
               range(num_mlp_block)]
         )
 
+        self.res_blocks = nn.Sequential(
+            *[ResidualBlock(num_features * 4) for _ in range(num_residuals)]
+        )
         self.up_blocks_1 = ConvBlock(num_features * 4, num_features * 2, down=False, kernel_size=3, stride=2, padding=1,
                                      output_padding=1)
 
@@ -225,8 +228,12 @@ class wavelet_Genetator(nn.Module):
         x = self.down_block_2(x)
 
         x = self.up(x)
+
         if len(self.UNext_blocks):
             x = self.UNext_blocks(x)
+
+        if len(self.res_blocks):
+            x = self.res_blocks(x)
         x1 = self.down(x)
 
 

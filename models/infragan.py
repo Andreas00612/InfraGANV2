@@ -228,11 +228,11 @@ class InfraGAN(BaseModel):
             self.loss_G['CCP'] = self.opt.lambda_CCP * self.loss_G_CCP
 
         if self.opt.loss_huber:
-            self.loss_G_huber = self.huber_loss(self.real_B, self.fake_B)
+            self.loss_G_huber = self.huber_loss(self.real_B.clone(), self.fake_B.clone())
             self.loss_G['loss_G_huber'] = self.opt.lambda_huber * self.loss_G_huber
 
         if self.opt.loss_GP:
-            self.loss_G_GP = self.GP_loss(self.real_B, self.fake_B)
+            self.loss_G_GP = self.GP_loss(self.real_B.clone(), self.fake_B.clone())
             self.loss_G['loss_G_GP'] = self.loss_G_GP
 
         if self.opt.loss_tv:

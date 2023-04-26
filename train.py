@@ -106,11 +106,13 @@ if __name__ == '__main__':
             torch.save(hist, p)
             model.save(epoch)
         if ssim > ssim_best:
+            ssim_best=ssim
             model.save('ssim_best')
-            print('saving the ssim_best model (epoch %d, total_steps %d, ssim %d)' % (epoch, total_steps,ssim))
+            print('saving the ssim_best model (epoch %d, total_steps %d, ssim %f)' % (epoch, total_steps,ssim))
         if lpips < lpips_best:
+            lpips_best=lpips
             model.save('lpips_best')
-            print('saving the lpips_best model (epoch %d, total_steps %d, lpips %d)' % (epoch, total_steps, lpips))
+            print('saving the lpips_best model (epoch %d, total_steps %d, lpips %f)' % (epoch, total_steps, lpips))
 
         print('End of epoch %d / %d \t Time Taken: %d sec' %
               (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))

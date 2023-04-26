@@ -70,6 +70,7 @@ class BaseOptions():
         self.parser.add_argument('--shift_size',type=int,default=5)
         self.parser.add_argument('--lpips_model',type=str, default='alex')
         self.parser.add_argument('--MoNCE_Net',type=str, default='vgg')
+        self.parser.add_argument('--GP_loss_type',type=str,default='L1')
 
         ###   data Augmentation  ###
         self.parser.add_argument('--no_flip', action='store_true',

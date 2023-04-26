@@ -87,7 +87,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--lambda_tv', type=float, default=10.0)
 
         self.parser.add_argument('--loss_GP', action='store_true')
-        self.parser.add_argument('--GP_loss_type',type=str, default='L1',)
+
         # self.parser.add_argument('--weight_conv', type=float, default=100)
         # self.parser.add_argument('--weight_sobel', type=float, default=50)
         self.parser.add_argument('--weight_L2', type=float, default=25)
