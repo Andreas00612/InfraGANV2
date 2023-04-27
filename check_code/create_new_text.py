@@ -96,7 +96,7 @@ def cpoy_infra_and_txt(txt_dir,infra_dir):
     for idx,ori_file_name in enumerate(infra_list):
 
         infra_filename = os.path.basename(ori_file_name)
-        new_filename = '{:05d}-0-{}'.format(idx + 1, infra_filename)
+        new_filename = '{:05d}-0-{}'.format(idx, infra_filename)
 
         print(ori_file_name +' -> ' + new_filename)
         os.rename(os.path.join(infra_dir, ori_file_name), os.path.join(infra_dir, new_filename))
@@ -105,8 +105,8 @@ def cpoy_infra_and_txt(txt_dir,infra_dir):
 
     for txt_name in txt_files:
         txt_path = os.path.join(txt_dir,txt_name)
-
-        new_txt_path = os.path.join(infra_dir,txt_name)
+        new_txt_name = txt_name.replace("visible", "lwir")
+        new_txt_path = os.path.join(infra_dir,new_txt_name)
         print(txt_path + '->' + new_txt_path)
         shutil.copyfile(txt_path, new_txt_path)
     print('Files copied to target folder')
@@ -116,15 +116,15 @@ if __name__ == '__main__':
     dir_path = r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess'
     train_dir_path = r'C:\Users\YZU\Desktop\KAIST_Lora\train'
     ###__1__##
-    images = make_thermal_dataset_kaist(mode='train')
-    random_list = random_choince_img(images, 100)
-    copy_AtoB(random_list=random_list,dest_dir = train_dir_path)
+    # images = make_thermal_dataset_kaist(mode='train')
+    # random_list = random_choince_img(images, 100)
+    # copy_AtoB(random_list=random_list,dest_dir = train_dir_path)
 
     ##__2__##
     #add_new_text(dir_path=r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb', add_txt='kaist_infrared')
 
 
     ##__3__##
-    # cpoy_infra_and_txt(txt_dir= r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb',
-    #                    infra_dir = r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_infra')
+    cpoy_infra_and_txt(txt_dir= r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb',
+                       infra_dir = r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_infra')
 
