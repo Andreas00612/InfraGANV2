@@ -117,11 +117,11 @@ if __name__ == '__main__':
     train_dir_path = r'C:\Users\YZU\Desktop\KAIST_Lora\train'
     ###__1__##
     # images = make_thermal_dataset_kaist(mode='train')
-    # random_list = random_choince_img(images, 100)
+    # random_list = random_choince_img(images, 250)
     # copy_AtoB(random_list=random_list,dest_dir = train_dir_path)
 
     ##__2__##
-    #add_new_text(dir_path=r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb', add_txt='kaist_infrared')
+    add_new_text(dir_path=r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb', add_txt='kaist_infrared')
 
 
     ##__3__##

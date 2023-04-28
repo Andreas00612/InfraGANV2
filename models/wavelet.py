@@ -53,7 +53,7 @@ class WavePool(nn.Module):
         return self.LL(x), self.LH(x), self.HL(x), self.HH(x)
 
 
-def get_wav_two(in_channels, pool=True):
+def get_wav_two(in_channels, out_channels,pool=True):
     """wavelet decomposition using conv2d"""
     """小波分解"""
     harr_wav_L = 1 / np.sqrt(2) * np.ones((1, 2))
@@ -75,18 +75,18 @@ def get_wav_two(in_channels, pool=True):
         net = nn.Conv2d
     else:
         net = nn.ConvTranspose2d
-    LL = net(in_channels, in_channels,
+    LL = net(in_channels, out_channels,
              kernel_size=2, stride=2, padding=0, bias=False,
-             groups=in_channels)
-    LH = net(in_channels, in_channels,
+             groups=out_channels)
+    LH = net(in_channels, out_channels,
              kernel_size=2, stride=2, padding=0, bias=False,
-             groups=in_channels)
-    HL = net(in_channels, in_channels,
+             groups=out_channels)
+    HL = net(in_channels, out_channels,
              kernel_size=2, stride=2, padding=0, bias=False,
-             groups=in_channels)
-    HH = net(in_channels, in_channels,
+             groups=out_channels)
+    HH = net(in_channels, out_channels,
              kernel_size=2, stride=2, padding=0, bias=False,
-             groups=in_channels)
+             groups=out_channels)
 
     LL.weight.requires_grad = False
     LH.weight.requires_grad = False
@@ -102,11 +102,12 @@ def get_wav_two(in_channels, pool=True):
 
 
 class WaveUnpool(nn.Module):
-    def __init__(self, in_channels, option_unpool='cat5'):
+    def __init__(self, in_channels,out_channels, option_unpool='cat5'):
         super(WaveUnpool, self).__init__()
         self.in_channels = in_channels
+        self.out_channels = out_channels
         self.option_unpool = option_unpool
-        self.LL, self.LH, self.HL, self.HH = get_wav_two(self.in_channels, pool=False)
+        self.LL, self.LH, self.HL, self.HH = get_wav_two(self.in_channels,self.out_channels, pool=False)
 
     def forward(self, LL, LH, HL, HH, original=None):
         if self.option_unpool == 'sum':

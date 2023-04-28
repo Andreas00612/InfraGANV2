@@ -208,8 +208,8 @@ class wavelet_Genetator(nn.Module):
         self.pool1 = WavePool(in_channels=64,out_channels=128).cuda()
         self.pool2 = WavePool(in_channels=128,out_channels=256).cuda()
 
-        self.recon_block1 = WaveUnpool(256, "sum").cuda()
-        self.recon_block2 = WaveUnpool(128, "sum").cuda()
+        self.recon_block1 = WaveUnpool(256,128 ,"sum").cuda()
+        self.recon_block2 = WaveUnpool(128,64,"sum").cuda()
 
         self.Conv1 = nn.Conv1d(in_channels=num_features * 4, out_channels=num_features * 2, kernel_size=(3, 3), padding=1)
         self.Conv2 = nn.Conv1d(in_channels=num_features * 2, out_channels=num_features , kernel_size=(3, 3), padding=1)
@@ -239,13 +239,13 @@ class wavelet_Genetator(nn.Module):
 
         x2 = self.up_blocks_1(x1)
         x_deconv = self.recon_block1(x1, LH2, HL2, HH2)
-        x_deconv = self.Conv1(x_deconv)
+        #x_deconv = self.Conv1(x_deconv)
         x3 = x2 + x_deconv
 
 
         x4 = self.up_blocks_2(x3)
         x_deconv = self.recon_block2(x3, LH1, HL1, HH1)
-        x_deconv = self.Conv2(x_deconv)
+        #x_deconv = self.Conv2(x_deconv)
         x5 = x4 + x_deconv
 
 
