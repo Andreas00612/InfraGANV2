@@ -77,7 +77,7 @@ if __name__ == '__main__':
     webpage.save()
 
     from evaluate import evaluate
-    evaluate(Resize=False)
+    #evaluate(Resize=False)
 
     # TODO: make inferences to a video
     # import cv2

@@ -114,5 +114,9 @@ class WaveUnpool(nn.Module):
             return self.LL(LL) + self.LH(LH) + self.HL(HL) + self.HH(HH)
         elif self.option_unpool == 'cat5' and original is not None:
             return torch.cat([self.LL(LL), self.LH(LH), self.HL(HL), self.HH(HH), original], dim=1)
+        elif self.option_unpool == 'add_high':
+            return self.LH(LH) + self.HL(HL) + self.HH(HH)
+        elif self.option_unpool == 'add_low':
+            return self.LL(LL)
         else:
             raise NotImplementedError

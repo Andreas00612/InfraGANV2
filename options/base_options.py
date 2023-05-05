@@ -66,11 +66,13 @@ class BaseOptions():
         self.parser.add_argument('--is_test', action='store_true')
         self.parser.add_argument('--canny', action='store_true')
 
+        self.parser.add_argument('-- ', type=str, default='sum')
         self.parser.add_argument('--token_channel',type=int,default=256)
         self.parser.add_argument('--shift_size',type=int,default=5)
         self.parser.add_argument('--lpips_model',type=str, default='alex')
         self.parser.add_argument('--MoNCE_Net',type=str, default='vgg')
         self.parser.add_argument('--GP_loss_type',type=str,default='L1')
+        self.parser.add_argument('--WaveUnpool',type=str,default='sum')
 
         ###   data Augmentation  ###
         self.parser.add_argument('--no_flip', action='store_true',

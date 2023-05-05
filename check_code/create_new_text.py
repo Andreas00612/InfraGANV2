@@ -50,7 +50,24 @@ def add_new_text(dir_path, add_txt):
             f.write(all_sentence)
     print('Add new text finish')
 
+def change_txt_name(dir_path,add_txt):
+    txt_files = [f for f in os.listdir(dir_path) if f.endswith('.txt')]
+    for idx,txt in enumerate(txt_files):
+        with open(os.path.join(dir_path, txt), 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            all_sentence = (add_txt) + content
+            print(all_sentence)
+            f.write(all_sentence)
+        filename = os.path.join(dir_path,txt)
+        new_filename = "-".join(txt.split("-")[2:])
+        # 去掉前面的两个編號
+        new_filename = os.path.join(dir_path, new_filename)
+        print(idx,'/12538 :',new_filename)
+        os.rename(filename, new_filename)
 
+
+    print('Add new text finish')
 def random_choince_img(_list, num):
     return list(random.sample(_list, num))
 
@@ -114,17 +131,25 @@ def cpoy_infra_and_txt(txt_dir,infra_dir):
 
 if __name__ == '__main__':
     dir_path = r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess'
-    train_dir_path = r'C:\Users\YZU\Desktop\KAIST_Lora\train'
+    train_dir_path = r'C:\Users\YZU\Desktop\KAIST_Lora\ControlNet'
     ###__1__##
-    # images = make_thermal_dataset_kaist(mode='train')
-    # random_list = random_choince_img(images, 250)
-    # copy_AtoB(random_list=random_list,dest_dir = train_dir_path)
+    #images = make_thermal_dataset_kaist(mode='train')
+    #random_list = random_choince_img(images, 250)
+
+    #copy_AtoB(random_list=images,dest_dir = train_dir_path)
 
     ##__2__##
-    add_new_text(dir_path=r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb', add_txt='kaist_infrared')
+    #add_new_text(dir_path=r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb', add_txt='kaist_infrared')
 
 
     ##__3__##
-    cpoy_infra_and_txt(txt_dir= r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb',
-                       infra_dir = r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_infra')
+    # cpoy_infra_and_txt(txt_dir= r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_rgb',
+    #                    infra_dir = r'C:\Users\YZU\Desktop\KAIST_Lora\preprocess_infra')
+
+    change_txt_name(dir_path=r'C:\Users\YZU\Desktop\KAIST_Lora\ControlNet\visible_text',
+                    add_txt='an infrared image of '
+                    )
+
+
+
 
