@@ -50,6 +50,7 @@ class TrainOptions(BaseOptions):
 
         # self.parser.add_argument('--drop_rate', type=float, default=-1)
         # self.parser.add_argument('--n_layers_D',type=int ,default=4)
+        self.parser.add_argument('--wavelet_mode',type=str,default='low')
 
         #### add loss function ####
 
