@@ -3,7 +3,7 @@ import numpy as np
 from torch import autograd
 from torch import nn
 import torch
-
+from util.visualizer import feature_visualization
 
 def get_wav(in_channels, out_channels, pool=True):
     harr_wav_L = 1 / np.sqrt(2) * np.ones((1, 2))
@@ -102,12 +102,13 @@ def get_wav_two(in_channels, out_channels,pool=True):
 
 
 class WaveUnpool(nn.Module):
-    def __init__(self, in_channels,out_channels, option_unpool='cat5'):
+    def __init__(self, in_channels,out_channels, option_unpool='cat5',visualize_stage=0):
         super(WaveUnpool, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.option_unpool = option_unpool
         self.LL, self.LH, self.HL, self.HH = get_wav_two(self.in_channels,self.out_channels, pool=False)
+        self.stage = visualize_stage
 
     def forward(self, LL, LH, HL, HH, original=None):
         if self.option_unpool == 'sum':
@@ -117,6 +118,7 @@ class WaveUnpool(nn.Module):
         elif self.option_unpool == 'add_high':
             return self.LH(LH) + self.HL(HL) + self.HH(HH)
         elif self.option_unpool == 'add_low':
+            #feature_visualization(self.LL(LL).clone(), module_type='self.LL(LL)', stage=self.stage)
             return self.LL(LL)
         else:
             raise NotImplementedError

@@ -6,7 +6,9 @@ from data.image_folder import make_dataset
 from data.image_folder import make_thermal_dataset, is_image_file
 from PIL import Image, ImageOps
 import cv2
-from data.build import DataAugmentation
+from data.build import DataAugmentation,Single_Normalize
+
+
 def make_thermal_dataset_kaist(mode, path=None, text_path=None, val_text_path=None):
     if path is None:
         path = 'datasets/KAIST/KAIST-dataset/kaist-cvpr15/images/'
@@ -44,6 +46,7 @@ def make_thermal_dataset_kaist(mode, path=None, text_path=None, val_text_path=No
     np.random.shuffle(images)
     return images
 
+
 def make_thermal_dataset_VEDAI(path):
     images = []
     assert os.path.isdir(path), '%s is not a valid directory' % path
@@ -58,16 +61,35 @@ def make_thermal_dataset_VEDAI(path):
     return images
 
 
+class AirsimDataset(BaseDataset):
+
+    def initialize(self, opt, test_path=None):
+        self.test_dir = test_path
+        self.dataset_list = os.listdir(test_path)
+        self.final_trans = Single_Normalize()
+
+    def __getitem__(self, index):
+        path_name =  self.dataset_list[index]
+        img_path = os.path.join(self.test_dir, self.dataset_list[index])
+        rgb_img = Image.open(img_path).convert('RGB')
+        #rgb_img = transforms.Resize(self.opt.loadSize)(rgb_img)
+        rgb_img = self.final_trans(rgb_img)
+
+        return rgb_img,path_name
+
+    def __len__(self):
+        return len(self.dataset_list)
+
+
 class ThermalDataset(BaseDataset):
-    def initialize(self, opt, mode='train',val_text_path=None,no_trans=None,Resize=False):
+    def initialize(self, opt, mode='train', val_text_path=None, no_trans=None, Resize=False):
         print('ThermalDataset')
         self.opt = opt
         self.root = opt.dataroot
         self.dir_AB = os.path.join(opt.dataroot, opt.phase)
         self.val_text_path = val_text_path if val_text_path else opt.val_text_path
         if not no_trans:
-            self.trans = DataAugmentation(mode=mode,opt=opt)
-
+            self.trans = DataAugmentation(mode=mode, opt=opt)
 
         if opt.dataset_mode == 'VEDAI':
             self.AB_paths = make_thermal_dataset_VEDAI(os.path.join(opt.dataroot, mode))
@@ -78,8 +100,9 @@ class ThermalDataset(BaseDataset):
                                                        val_text_path=self.val_text_path)
         assert (opt.resize_or_crop == 'resize_and_crop')
 
-        self.Night_dir_list = ['set03','set04','set05','set09','set10','set11']
+        self.Night_dir_list = ['set03', 'set04', 'set05', 'set09', 'set10', 'set11']
         self.Day_dir_list = ['set00', 'set01', 'set02', 'set06', 'set07', 'set08']
+
     def __getitem__(self, index):
         # AB_path = self.AB_paths[index]
         A_path = self.AB_paths[index]['A']
@@ -92,8 +115,7 @@ class ThermalDataset(BaseDataset):
         infra_img = ImageOps.grayscale(B)
         infra_img = transforms.Resize(self.opt.loadSize)(infra_img)
 
-        infra_img,rgb_img = self.trans(infra=infra_img,rgb=rgb_img,Day_Night=self.Day_or_Night(A_path))
-
+        infra_img, rgb_img = self.trans(infra=infra_img, rgb=rgb_img, Day_Night=self.Day_or_Night(A_path))
 
         if self.opt.which_direction == 'BtoA':
             input_nc = self.opt.output_nc
@@ -115,12 +137,9 @@ class ThermalDataset(BaseDataset):
     def name(self):
         return 'ThermalDataset'
 
-    def Day_or_Night(self,path):
+    def Day_or_Night(self, path):
 
-        for dir_num in  self.Night_dir_list:
+        for dir_num in self.Night_dir_list:
             if dir_num in path:
                 return 'Night'
         return 'Day'
-
-
-

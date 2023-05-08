@@ -2,11 +2,10 @@ import os
 from options.test_options import TestOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
-import numpy as np
 from util.visualizer import Visualizer
-from util import html,util
+from util import html
 import torch
-from data.thermal_dataset import ThermalDataset,AirsimDataset
+from data.thermal_dataset import ThermalDataset
 from data.flir_dataset import FlirDataset
 from lpips.lpips import LPIPS
 from ssim import MSSSIM, SSIM
@@ -33,9 +32,6 @@ if __name__ == '__main__':
     elif opt.dataset_mode == 'FLIR':
         dataset = FlirDataset()
         dataset.initialize(opt, mode="test")
-    elif opt.dataset_mode == 'AirSim':
-        dataset = AirsimDataset()
-        dataset.initialize(opt,test_path=r'C:\Users\YZU\Desktop\Airsim')
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=1,
@@ -55,23 +51,15 @@ if __name__ == '__main__':
     step, ssim_sum = 0, 0
     # test
     for i, data in enumerate(dataloader):
-        if i >= len(dataset):
-            break
-        if opt.dataset_mode == 'FLIR':
-            model.set_input(data)
-        elif opt.dataset_mode == 'KAIST':
-            model.set_KAIST_input(data)
-        elif opt.dataset_mode == 'AirSim':
-            model.set_AirSim_input(data)
-            model.AirSim_test(inference=True)
-            image_dir = r'C:\Users\YZU\Desktop\AirSim_IR_result'
-            image_name = 'IR_' + str(model.path_name[0])
-            save_path = os.path.join(image_dir, image_name)
-            img = util.tensor2im(model.fake_B)
-            util.save_image(np.asarray(img), save_path)
-        else:
-            raise ValueError("Dataset [%s] not recognized." % opt.dataset_mode)
-        if opt.dataset_mode != 'AirSim':
+        if i % 3 == 0 or opt.dataset_mode == 'KAIST':
+            if i >= len(dataset):
+                break
+            if opt.dataset_mode == 'FLIR':
+                model.set_input(data)
+            elif opt.dataset_mode == 'KAIST':
+                model.set_KAIST_input(data)
+            else:
+                raise ValueError("Dataset [%s] not recognized." % opt.dataset_mode)
             model.test(inference=True)
             # model.real_B = transforms.Resize((512, 640))(model.real_B)
             # model.real_A = transforms.Resize((512, 640))(model.real_A)
@@ -86,13 +74,12 @@ if __name__ == '__main__':
             print('%04d/%d: process image... %s -> ssim:%.4f , lpips:%.4f' % (i, len(dataset), img_path, ssim_now, lpips_now))
             # with open(os.path.join(web_dir, 'result.txt'), "a") as log_file:
             #     log_file.write(f'ssim:{ssim:.3f},lpips:{lpips:.3f} \n')
-    if opt.dataset_mode != 'AirSim':
-        webpage.save()
+    webpage.save()
 
     from evaluate import evaluate
-    evaluate(Resize=False)
+    #evaluate(Resize=False)
 
-    # TODO: make inferences to a video
+
     # import cv2
     # # img_dir = r'checkpoints\inference_results\experiment_name\test_latest'  # set image dir
     # img_dir = web_dir
