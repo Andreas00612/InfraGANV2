@@ -144,31 +144,19 @@ class Tokenized_ResNet(nn.Module):
 
     def forward(self, x):
         x = self.initial(x)
-        feature_visualization(x.clone(), module_type=self.module_type, stage=1)
-
         for layer in self.down_blocks:
             x = layer(x)
-        feature_visualization(x.clone(), module_type=self.module_type, stage=2)
-        x = self.up(x)
-        feature_visualization(x.clone(), module_type=self.module_type, stage=3)
-        # if len(self.res_blocks):
-        #     x = self.res_blocks(x)
-        stage = 4
-        if len(self.UNext_blocks):
-            for m in self.UNext_blocks:
-                x = m(x)
-                feature_visualization(x.clone(), module_type='UNext_blocks', stage=stage)
-                stage += 1
-            # x = self.UNext_blocks(x)
 
-        #feature_visualization(x.clone(), module_type=self.module_type, stage=stage)
-        stage += 1
+        x = self.up(x)
+
+        if len(self.UNext_blocks):
+            x = self.UNext_blocks(x)
+
+        if len(self.res_blocks):
+            x = self.res_blocks(x)
         x = self.down(x)
-        feature_visualization(x.clone(), module_type=self.module_type, stage=stage)
-        stage += 1
         for layer in self.up_blocks:
             x = layer(x)
-        feature_visualization(x.clone(), module_type=self.module_type, stage=stage)
         return torch.tanh(self.last(x))
 
 
@@ -226,20 +214,18 @@ class wavelet_Genetator(nn.Module):
                                padding=1)
         self.Conv2 = nn.Conv1d(in_channels=num_features * 2, out_channels=num_features, kernel_size=(3, 3), padding=1)
 
-        # self.module_type = 'LL'
-
     def forward(self, x):
         skips = {}
         x = self.initial(x)
-        #feature_visualization(x.clone(), module_type='down', stage=1)
+        # feature_visualization(x.clone(), module_type='down', stage=1)
         LL1, LH1, HL1, HH1 = self.pool1(x)
         skips['pool1'] = [LH1, HL1, HH1]
         x = self.down_block_1(x)
-        #feature_visualization(x.clone(), module_type='down', stage=2)
+        # feature_visualization(x.clone(), module_type='down', stage=2)
         LL2, LH2, HL2, HH2 = self.pool2(x)
         skips['pool2'] = [LH2, HL2, HH2]
         x = self.down_block_2(x)
-        #feature_visualization(x.clone(), module_type='down', stage=3)
+        # feature_visualization(x.clone(), module_type='down', stage=3)
         x = self.up(x)
         stage = 4
         if len(self.UNext_blocks):
@@ -247,27 +233,27 @@ class wavelet_Genetator(nn.Module):
             if len(self.UNext_blocks):
                 for m in self.UNext_blocks:
                     x = m(x)
-                    #feature_visualization(x.clone(), module_type='UNext_blocks', stage=stage)
+                    # feature_visualization(x.clone(), module_type='UNext_blocks', stage=stage)
                     stage += 1
 
         # if len(self.res_blocks):
         #     x = self.res_blocks(x)
         x1 = self.down(x)
-        #feature_visualization(x1.clone(), module_type='up', stage=stage)
+        # feature_visualization(x1.clone(), module_type='up', stage=stage)
         stage += 1
 
         x2 = self.up_blocks_1(x1)
         x_deconv = self.recon_block1(LL2, LH2, HL2, HH2)  ##LL, LH, HL, HH, original=None
-        #feature_visualization(x_deconv.clone(), module_type='LL', stage=1)
+        # feature_visualization(x_deconv.clone(), module_type='LL', stage=1)
         x3 = x2 + x_deconv
-        #feature_visualization(x3.clone(), module_type='up', stage=stage)
+        # feature_visualization(x3.clone(), module_type='up', stage=stage)
         stage += 1
 
         x4 = self.up_blocks_2(x3)
         x_deconv = self.recon_block2(LL1, LH1, HL1, HH1)
-        #feature_visualization(x_deconv.clone(), module_type='LL', stage=2)
+        # feature_visualization(x_deconv.clone(), module_type='LL', stage=2)
         x5 = x4 + x_deconv
-        #feature_visualization(x5.clone(), module_type='up', stage=stage)
+        # feature_visualization(x5.clone(), module_type='up', stage=stage)
 
         return torch.tanh(self.last(x5))
 
@@ -275,7 +261,7 @@ class wavelet_Genetator(nn.Module):
 class deep_wavelet_Genetator(nn.Module):
     def __init__(self, img_channels, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=3, img_size=512,
                  token_channel=256,
-                 opt=None, shift_type='Tokenized_MLP_Block', shift_size=5):
+                 opt=None, shift_type='Tokenized_MLP_Block', shift_size=5, Unpool='add_high'):
         super().__init__()
         self.opt = opt
         self.initial = nn.Sequential(
@@ -311,9 +297,9 @@ class deep_wavelet_Genetator(nn.Module):
         self.pool2 = WavePool(in_channels=128, out_channels=256).cuda()
         self.pool3 = WavePool(in_channels=256, out_channels=512).cuda()
 
-        self.recon_block3 = WaveUnpool(512, 256, 'add_high').cuda()
-        self.recon_block2 = WaveUnpool(256, 128, 'add_high').cuda()
-        self.recon_block1 = WaveUnpool(128, 64, 'add_high').cuda()
+        self.recon_block3 = WaveUnpool(512, 256, Unpool).cuda()
+        self.recon_block2 = WaveUnpool(256, 128, Unpool).cuda()
+        self.recon_block1 = WaveUnpool(128, 64, Unpool).cuda()
 
         self.adaptive_LL2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1)
         self.adaptive_LL1 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
@@ -326,19 +312,19 @@ class deep_wavelet_Genetator(nn.Module):
         x = self.down_block_1(x)
 
         LL2, LH2, HL2, HH2 = self.pool2(x)
-        x = self.down_block_2(x)
+        x = self.down_block_2(x + LL1)
 
         LL3, LH3, HL3, HH3 = self.pool3(x)
-        x = self.up(x)
+        x = self.up(x + LL2)
 
         if len(self.UNext_blocks):
             for idx, m in enumerate(self.UNext_blocks):
-                if idx == 7:
-                    x = m(x + self.adaptive_LL2(LL2))
-                elif idx == 8:
-                    x = m(x + self.adaptive_LL1(LL1))
-                else:
-                    x = m(x)
+                # if idx == 7:
+                #     x = m(x + self.adaptive_LL2(LL2))
+                # elif idx == 8:
+                #     x = m(x + self.adaptive_LL1(LL1))
+                # else:
+                x = m(x)
 
         x0 = self.down(x)
         x_deconv = self.recon_block3(LL3, LH3, HL3, HH3)
@@ -355,13 +341,58 @@ class deep_wavelet_Genetator(nn.Module):
         return torch.tanh(self.last(x5))
 
 
+class deep_waveletNet(deep_wavelet_Genetator):
+    def __init__(self, img_channels, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=3, img_size=512,
+                 token_channel=256,
+                 opt=None, shift_type='Tokenized_MLP_Block', shift_size=5, Unpool='add_high'):
+        super().__init__(img_channels, num_features=num_features, num_residuals=num_residuals,
+                         num_mlp_block=num_mlp_block, out_channels=out_channels, img_size=img_size,
+                         token_channel=token_channel,
+                         opt=opt, shift_type=shift_type, shift_size=shift_size, Unpool=Unpool)
+
+        self.adaptive_LL3 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1)
+        self.adaptive_3 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
+        self.adaptive_2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
+        self.adaptive_1 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=1)
+
+    def forward(self, x):
+
+        x = self.initial(x)
+
+        LL1, LH1, HL1, HH1 = self.pool1(x)
+        x = self.down_block_1(x)
+
+        LL2, LH2, HL2, HH2 = self.pool2(x)
+        x = self.down_block_2(x + LL1)
+
+        LL3, LH3, HL3, HH3 = self.pool3(x)
+        x = self.up(x + LL2)
+        print('x:', x.shape)
+
+        if len(self.UNext_blocks):
+            for idx, m in enumerate(self.UNext_blocks):
+                x = m(x)
+
+        x_deconv = self.recon_block3(LL3, LH3, HL3, HH3)
+        x0 = self.down(x + x_deconv)
+
+        x_deconv = self.recon_block2(LL2, LH2, HL2, HH2)
+        x2 = self.up_blocks_1(x0 + self.adaptive_2(x_deconv))
+
+        x_deconv = self.recon_block1(LL1, LH1, HL1, HH1)
+        x4 = self.up_blocks_2(x2 +self.adaptive_1(x_deconv))
+        x5 = self.last(x4)
+
+        return torch.tanh(x5)
+
+
 def test():
     img_channels = 3
     x = torch.randn((4, img_channels, 512, 512)).cuda()
 
     # gen = Tokenized_ResNet(img_channels=3, num_features=64, num_residuals=9, out_channels=1, img_size=512)
-    gen = deep_wavelet_Genetator(3, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1, img_size=512,
-                                 shift_type='shiftedBlock_L2', token_channel=256)
+    gen = deep_waveletNet(img_channels=3, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
+                          img_size=512, shift_type='shiftedBlock')
 
     gen.cuda()
     print(gen(x).shape)

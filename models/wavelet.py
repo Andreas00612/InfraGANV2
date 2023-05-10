@@ -5,6 +5,7 @@ from torch import nn
 import torch
 from util.visualizer import feature_visualization
 
+
 def get_wav(in_channels, out_channels, pool=True):
     harr_wav_L = 1 / np.sqrt(2) * np.ones((1, 2))
     harr_wav_H = 1 / np.sqrt(2) * np.ones((1, 2))
@@ -53,7 +54,7 @@ class WavePool(nn.Module):
         return self.LL(x), self.LH(x), self.HL(x), self.HH(x)
 
 
-def get_wav_two(in_channels, out_channels,pool=True):
+def get_wav_two(in_channels, out_channels, pool=True):
     """wavelet decomposition using conv2d"""
     """小波分解"""
     harr_wav_L = 1 / np.sqrt(2) * np.ones((1, 2))
@@ -102,12 +103,12 @@ def get_wav_two(in_channels, out_channels,pool=True):
 
 
 class WaveUnpool(nn.Module):
-    def __init__(self, in_channels,out_channels, option_unpool='cat5',visualize_stage=0):
+    def __init__(self, in_channels, out_channels, option_unpool='cat5', visualize_stage=0):
         super(WaveUnpool, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.option_unpool = option_unpool
-        self.LL, self.LH, self.HL, self.HH = get_wav_two(self.in_channels,self.out_channels, pool=False)
+        self.LL, self.LH, self.HL, self.HH = get_wav_two(self.in_channels, self.out_channels, pool=False)
         self.stage = visualize_stage
 
     def forward(self, LL, LH, HL, HH, original=None):
@@ -116,9 +117,11 @@ class WaveUnpool(nn.Module):
         elif self.option_unpool == 'cat5' and original is not None:
             return torch.cat([self.LL(LL), self.LH(LH), self.HL(HL), self.HH(HH), original], dim=1)
         elif self.option_unpool == 'add_high':
+            # a = self.LH(LH) + self.HL(HL) + self.HH(HH)
+            # feature_visualization(a.clone(), module_type='up', stage=self.stage)
             return self.LH(LH) + self.HL(HL) + self.HH(HH)
         elif self.option_unpool == 'add_low':
-            #feature_visualization(self.LL(LL).clone(), module_type='self.LL(LL)', stage=self.stage)
+            # feature_visualization(self.LL(LL).clone(), module_type='self.LL(LL)', stage=self.stage)
             return self.LL(LL)
         else:
             raise NotImplementedError

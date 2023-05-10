@@ -8,7 +8,7 @@ from models.multiresunet import MultiResUnetGenerator
 from models.unetgan.unet_discriminator import Unet_DiscriminatorGenerator
 from models.discriminator import SesameNLayerDiscriminator
 from models.UNeXt import UNext
-from models.UNext_Resnet import Tokenized_ResNet,wavelet_Genetator
+from models.UNext_Resnet import Tokenized_ResNet,wavelet_Genetator,deep_wavelet_Genetator
 
 
 ###############################################################################
@@ -160,6 +160,12 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
         init_flag = False
     elif which_model_netG == 'wavelet_Resnet':
         netG = wavelet_Genetator(input_nc, num_features=64, num_residuals=9, num_mlp_block=0, out_channels=1,
+                                 img_size=512, opt=opt, token_channel=opt.token_channel,
+                                 shift_type='shiftedBlock', shift_size=opt.shift_size)
+        init_flag = False
+
+    elif which_model_netG == 'deep_wavelet_Genetator':
+        netG = deep_wavelet_Genetator(input_nc, num_features=64, num_residuals=9, num_mlp_block=0, out_channels=1,
                                  img_size=512, opt=opt, token_channel=opt.token_channel,
                                  shift_type='shiftedBlock', shift_size=opt.shift_size)
         init_flag = False
