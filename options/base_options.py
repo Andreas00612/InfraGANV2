@@ -74,6 +74,8 @@ class BaseOptions():
         self.parser.add_argument('--GP_loss_type',type=str,default='L1')
         self.parser.add_argument('--WaveUnpool',type=str,default='sum')
 
+        self.parser.add_argument('--wavelet_disc',action='store_true')
+
         ###   data Augmentation  ###
         self.parser.add_argument('--no_flip', action='store_true',
                                  help='if specified, do not flip the images for data augmentation')

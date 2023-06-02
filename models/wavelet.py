@@ -117,11 +117,12 @@ class WaveUnpool(nn.Module):
         elif self.option_unpool == 'cat5' and original is not None:
             return torch.cat([self.LL(LL), self.LH(LH), self.HL(HL), self.HH(HH), original], dim=1)
         elif self.option_unpool == 'add_high':
-            # a = self.LH(LH) + self.HL(HL) + self.HH(HH)
-            # feature_visualization(a.clone(), module_type='up', stage=self.stage)
             return self.LH(LH) + self.HL(HL) + self.HH(HH)
         elif self.option_unpool == 'add_low':
-            # feature_visualization(self.LL(LL).clone(), module_type='self.LL(LL)', stage=self.stage)
             return self.LL(LL)
         else:
             raise NotImplementedError
+
+
+if __name__ == '__main__':
+    get_wav(in_channels=3,out_channels=6,pool=True)

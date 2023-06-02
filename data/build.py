@@ -30,8 +30,6 @@ class DataAugmentation():
 
     def __call__(self, infra, rgb, Day_Night):
 
-        # if Day_Night == 'Night' :
-        #     rgb = Image.fromarray(cv2.medianBlur(np.asarray(rgb),5))
 
         if self.mode != 'train':
             return self.final_trans(infra=infra,rgb=rgb)
@@ -45,8 +43,6 @@ class DataAugmentation():
 
         if Day_Night == 'Day' and not self.opt.no_add_noise:
             rgb = self.Gaussion_noise(rgb)
-
-
 
 
         return self.final_trans(infra=infra,rgb=rgb)

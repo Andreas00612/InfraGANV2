@@ -6,9 +6,9 @@ from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from models.multiresunet import MultiResUnetGenerator
 from models.unetgan.unet_discriminator import Unet_DiscriminatorGenerator
-from models.discriminator import SesameNLayerDiscriminator
+from models.discriminator import SesameNLayerDiscriminator,Wavelet_Sesame_Disc
 from models.UNeXt import UNext
-from models.UNext_Resnet import Tokenized_ResNet,wavelet_Genetator,deep_wavelet_Genetator
+from models.UNext_Resnet import Tokenized_ResNet, wavelet_Genetator, deep_wavelet_Genetator, wavelet_concat_Gen
 
 
 ###############################################################################
@@ -140,23 +140,26 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
         init_flag = False
 
     elif which_model_netG == 'Tokenized_ResNet_0_9':
-        netG = Tokenized_ResNet(input_nc, num_features=64,  num_residuals=0, num_mlp_block=9, out_channels=1, img_size=512, opt=opt, token_channel=opt.token_channel,
+        netG = Tokenized_ResNet(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
+                                img_size=512, opt=opt, token_channel=opt.token_channel,
                                 shift_type='shiftedBlock', shift_size=opt.shift_size)
         init_flag = False
 
     elif which_model_netG == 'Tokenized_ResNet_4_4':
-        netG = Tokenized_ResNet(input_nc, num_features=64, num_residuals=4, num_mlp_block=4, out_channels=1, img_size=512, opt=opt, shift_type='shiftedBlock')
+        netG = Tokenized_ResNet(input_nc, num_features=64, num_residuals=4, num_mlp_block=4, out_channels=1,
+                                img_size=512, opt=opt, shift_type='shiftedBlock')
         init_flag = False
 
     elif which_model_netG == 'Tokenized_ResNet9_Conv1d':
-        netG = Tokenized_ResNet(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1, img_size=512, opt=opt,
+        netG = Tokenized_ResNet(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
+                                img_size=512, opt=opt,
                                 shift_type='shiftedBlock_L2', token_channel=opt.token_channel)
         init_flag = False
 
     elif which_model_netG == 'wavelet_Genetator':
         netG = wavelet_Genetator(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
-                                img_size=512, opt=opt, token_channel=opt.token_channel,
-                                shift_type='shiftedBlock', shift_size=opt.shift_size)
+                                 img_size=512, opt=opt, token_channel=opt.token_channel,
+                                 shift_type='shiftedBlock', shift_size=opt.shift_size)
         init_flag = False
     elif which_model_netG == 'wavelet_Resnet':
         netG = wavelet_Genetator(input_nc, num_features=64, num_residuals=9, num_mlp_block=0, out_channels=1,
@@ -165,9 +168,16 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
         init_flag = False
 
     elif which_model_netG == 'deep_wavelet_Genetator':
-        netG = deep_wavelet_Genetator(input_nc, num_features=64, num_residuals=9, num_mlp_block=0, out_channels=1,
-                                 img_size=512, opt=opt, token_channel=opt.token_channel,
-                                 shift_type='shiftedBlock', shift_size=opt.shift_size)
+        netG = deep_wavelet_Genetator(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
+                                      img_size=512, opt=opt, token_channel=opt.token_channel,
+                                      shift_type='shiftedBlock', shift_size=opt.shift_size, Unpool=opt.WaveUnpool)
+        init_flag = False
+
+
+    elif which_model_netG == 'wavelet_concat_Gen':
+        netG = wavelet_concat_Gen(input_nc, num_features=64, num_residuals=0, num_mlp_block=9, out_channels=1,
+                                  img_size=512, opt=opt, token_channel=opt.token_channel,
+                                  shift_type='shiftedBlock', shift_size=opt.shift_size, Unpool=opt.WaveUnpool)
         init_flag = False
 
 
@@ -198,11 +208,16 @@ def define_D(input_nc, ndf, which_model_netD, opt,
                                    gpu_ids=gpu_ids)
     elif which_model_netD == 'pixel':
         netD = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_sigmoid=use_sigmoid, gpu_ids=gpu_ids)
+
     elif which_model_netD == 'unetdiscriminator':
         netD = Unet_DiscriminatorGenerator(input_nc, resolution=resolution, gpu_ids=gpu_ids)
 
     elif which_model_netD == 'SesameNLayerDiscriminator':
         netD = SesameNLayerDiscriminator(opt, input_nc)
+
+    elif which_model_netD == 'Wavelet_Sesame_Disc':
+        netD = Wavelet_Sesame_Disc(opt, input_nc)
+
     else:
         raise NotImplementedError('Discriminator model name [%s] is not recognized' %
                                   which_model_netD)

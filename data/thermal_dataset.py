@@ -22,10 +22,10 @@ def make_thermal_dataset_kaist(mode, path=None, text_path=None, val_text_path=No
     assert os.path.isdir(path), '%s is not a valid directory' % path
     images = []
     with open(text_path) as f:
-        lines = f.readlines()
+        lines = [line.strip() for line in f.readlines()]
     # D:\InfraGAN\KAIST\KAIST - dataset\kaist - cvpr15\images\set06\V000\visible
     for line in lines:
-        line = line.split()[0]
+        #line = line.split()[0]
         line = line.split('/')
         path_rgb = os.path.join(path, line[0])
         path_rgb = os.path.join(path_rgb, line[1])
@@ -43,7 +43,7 @@ def make_thermal_dataset_kaist(mode, path=None, text_path=None, val_text_path=No
                                                                                     line[2] + '.txt')
                        })
     np.random.seed(12)
-    np.random.shuffle(images)
+    #np.random.shuffle(images)
     return images
 
 
