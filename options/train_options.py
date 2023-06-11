@@ -47,11 +47,10 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--n_Gen', type=int, default=2)
         self.parser.add_argument('--D_input', type=str, default='cat')
 
-        self.parser.add_argument('--WaveUnpool',type=str,default='add_high')
-
 
         # self.parser.add_argument('--drop_rate', type=float, default=-1)
         # self.parser.add_argument('--n_layers_D',type=int ,default=4)
+        self.parser.add_argument('--wavelet_mode',type=str,default='low')
 
         #### add loss function ####
 

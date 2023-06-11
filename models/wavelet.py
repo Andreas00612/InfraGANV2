@@ -3,7 +3,7 @@ import numpy as np
 from torch import autograd
 from torch import nn
 import torch
-from torchvision import transforms
+from util.visualizer import feature_visualization
 
 
 def get_wav(in_channels, out_channels, pool=True):
@@ -52,14 +52,6 @@ class WavePool(nn.Module):
 
     def forward(self, x):
         return self.LL(x), self.LH(x), self.HL(x), self.HH(x)
-
-
-def unloader(img):
-    img = (img + 1) / 2
-    tf = transforms.Compose([
-        transforms.ToPILImage()
-    ])
-    return tf(img)
 
 
 def get_wav_two(in_channels, out_channels, pool=True):
@@ -111,12 +103,13 @@ def get_wav_two(in_channels, out_channels, pool=True):
 
 
 class WaveUnpool(nn.Module):
-    def __init__(self, in_channels, out_channels, option_unpool='cat5'):
+    def __init__(self, in_channels, out_channels, option_unpool='cat5', visualize_stage=0):
         super(WaveUnpool, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.option_unpool = option_unpool
         self.LL, self.LH, self.HL, self.HH = get_wav_two(self.in_channels, self.out_channels, pool=False)
+        self.stage = visualize_stage
 
     def forward(self, LL, LH, HL, HH, original=None):
         if self.option_unpool == 'sum':
@@ -132,4 +125,4 @@ class WaveUnpool(nn.Module):
 
 
 if __name__ == '__main__':
-    LL, LH, HL, HH = get_wav(in_channels=3, out_channels=3)
+    get_wav(in_channels=3,out_channels=6,pool=True)

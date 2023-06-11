@@ -12,7 +12,7 @@ from tqdm import tqdm
 import numpy as np
 from skimage.metrics import structural_similarity
 import torchvision.transforms as transforms
-
+import draq_pic
 
 class AverageMeter(object):
     def __init__(self):
@@ -59,7 +59,7 @@ def evaluate(Resize=False):
     opt.serial_batches = True  # no shuffle
     opt.no_flip = True  # no flip
     #opt.val_text_path = 'datasets/KAIST/dataset/kaist-cvpr15/imageSets/test-all-20.txt'
-    val_text_path = 'datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/val_set_new.txt'
+    val_text_path = 'datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/night_diffucult_img.txt'
     mode = "test"
     print(opt.dataset_mode)
     if opt.dataset_mode == 'VEDAI':
@@ -68,7 +68,7 @@ def evaluate(Resize=False):
     elif opt.dataset_mode == 'KAIST':
         dataset = ThermalDataset()
         dataset.initialize(opt, mode=mode,
-                           val_text_path='datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/val_set_new.txt')  # val_set_new.txt test_set_four
+                           val_text_path='datasets/KAIST/KAIST-dataset/kaist-cvpr15/imageSets/val_set_new.txt')  # val_set_new.txt test_set_four,night_diffucult_img,test-all-20.txt
     elif opt.dataset_mode == 'FLIR':
         dataset = FlirDataset()
         dataset.initialize(opt, test=True)
@@ -112,7 +112,13 @@ def evaluate(Resize=False):
     }
 
     t = 0.
+    all_SSIM = []
+    all_LPIPS = []
+    all_data_path = []
     for i, data in tqdm(enumerate(dataloader), total=int(len(dataloader))):
+
+
+        all_data_path.append(data['A_paths'][0])
 
         model.set_KAIST_input(data)
         batch_size = model.input_A.shape[0]
@@ -145,10 +151,11 @@ def evaluate(Resize=False):
 
         im_ssim = structural_similarity(im_real_B, im_fake_B, channel_axis=2)
         ssim = ssim_obj(model.real_B.clone(), model.fake_B.clone()).item()
+        all_SSIM.append(ssim)
 
         im_lpips = lpips_obj(transforms.ToTensor()(im_real_B).clone(), transforms.ToTensor()(im_fake_B).clone(),normalize=True).mean().item()
         lpips = lpips_obj(model.real_B.cpu().clone(), model.fake_B.cpu().clone()).mean().item()
-
+        all_LPIPS.append(lpips)
         # psnr = tf.image.psnr(tf.convert_to_tensor(model.real_B.cpu().numpy()),
         #                      tf.convert_to_tensor(model.fake_B.cpu().numpy()), 2).numpy()
         # l1 = L1_obj(model.real_B.clone(), model.fake_B.clone()).item()
@@ -177,6 +184,11 @@ def evaluate(Resize=False):
         # overall_metric['psnr'].update(psnr, batch_size)
 
     print("fps:", (i + 1) / t)
+    print("ssim:",sum(all_SSIM)/len(all_SSIM))
+    print("lpips",sum(all_LPIPS)/len(all_LPIPS))
+
+
+
 
     if class_agn:
         for k in dataset_class.keys():
@@ -201,6 +213,8 @@ def evaluate(Resize=False):
     with open(text_name, "a") as log_file:
         log_file.write("____END____\n")
 
+    draq_pic.draq_and_analysis(all_SSIM,all_data_path,save_dir=txt_dir,mode='ssim')
+    draq_pic.draq_and_analysis(all_LPIPS, all_data_path,save_dir=txt_dir,mode='lpips')
 
 if __name__ == '__main__':
     evaluate()

@@ -39,7 +39,18 @@ def thermal_tensor2im(image_tensor, imtype=np.uint8):
     # d = tmax - tmin
     # image_numpy = (image_numpy - tmin) / d * 255.0
     return image_numpy.astype(imtype)
+def normalize_image(image):
+    # 找到图像的最大值和最小值
+    max_value = torch.max(image)
+    min_value = torch.min(image)
 
+    # 将图像的范围缩放到0到1之间
+    normalized_image = (image - min_value) / (max_value - min_value)
+
+    # 将范围缩放到-1到1之间
+    normalized_image = normalized_image * 2 - 1
+
+    return normalized_image
 # Converts a Tensor into a Numpy array
 # |imtype|: the desired type of the converted numpy array
 def thermal_rel_tensor2im(image_tensor, label_tensor, imtype=np.uint8):

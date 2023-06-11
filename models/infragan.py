@@ -118,6 +118,11 @@ class InfraGAN(BaseModel):
         # self.input_A_Canny = input_A_Canny
         self.image_paths = input['A_paths' if AtoB else 'B_paths']
 
+    def set_AirSim_input(self,input):
+        if len(self.gpu_ids) > 0:
+            self.input_A = input[0].cuda(self.gpu_ids[0], non_blocking=True)
+        self.path_name = input[1]
+
     def forward(self):
         if self.opt.canny:
             self.real_A = Variable(torch.cat((self.input_A, self.input_A_Canny), 1))
@@ -161,6 +166,15 @@ class InfraGAN(BaseModel):
                 self.d_losses = self.loss_D
 
         return t
+
+    def AirSim_test(self, inference=False):
+        if not self.opt.is_test:
+            self.netG.eval()
+            self.netD.eval()
+        else:
+            self.netG.eval()
+        with torch.no_grad():
+            self.fake_B = self.netG(self.input_A)
 
     # get image paths
     def get_image_paths(self):

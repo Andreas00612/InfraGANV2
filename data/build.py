@@ -3,7 +3,7 @@ from PIL import Image
 import random
 import numpy as np
 import torchvision.transforms.functional as F
-
+import cv2
 
 class DataAugmentation():
     def __init__(self, opt=None, mode='train'):
@@ -29,6 +29,8 @@ class DataAugmentation():
         return transform_list
 
     def __call__(self, infra, rgb, Day_Night):
+
+
         if self.mode != 'train':
             return self.final_trans(infra=infra,rgb=rgb)
 
@@ -41,6 +43,7 @@ class DataAugmentation():
 
         if Day_Night == 'Day' and not self.opt.no_add_noise:
             rgb = self.Gaussion_noise(rgb)
+
 
         return self.final_trans(infra=infra,rgb=rgb)
 
@@ -146,4 +149,14 @@ class My_Normalize():
 
         return infra,rgb
 
+class Single_Normalize():
+    def __init__(self):
+        # self.resize = Resize
+        pass
+
+    def __call__(self, rgb):
+        rgb = transforms.CenterCrop(512)(rgb)
+        rgb = transforms.ToTensor()(rgb.copy()).float()
+        rgb = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])(rgb)
+        return rgb
 
