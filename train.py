@@ -15,6 +15,7 @@ if __name__ == '__main__':(for all code)
 or just set num_worker=0
 '''
 if __name__ == '__main__':
+    ''' 0611 '''
     opt = TrainOptions().parse()
     data_loader = CreateDataLoader(opt)
     # dataset = data_loader.load_data()                                         # only dataset or dataloader (same one)
