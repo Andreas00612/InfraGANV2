@@ -9,6 +9,16 @@ from models.wavelet import get_wav, WaveUnpool
 from util.visualizer import feature_visualization
 
 
+class DeConvBlock(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        self.conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2, padding=0, bias=False,
+                                       groups=out_channels)
+
+    def forward(self, LL, LH, HL, HH):
+        return self.conv(LH + HL + HH)
+
+
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, down=True, use_act=True, **kwargs):
         super().__init__()
@@ -388,6 +398,7 @@ class wavelet_concat_Gen(nn.Module):
                  opt=None, shift_type='Tokenized_MLP_Block', shift_size=5, Unpool='add_high'):
         super().__init__()
         self.opt = opt
+
         self.initial = nn.Sequential(
             nn.Conv2d(img_channels, num_features, kernel_size=7, stride=1, padding=3, padding_mode="reflect"),
             nn.InstanceNorm2d(num_features),
@@ -420,10 +431,14 @@ class wavelet_concat_Gen(nn.Module):
         self.pool1 = WavePool(in_channels=64, out_channels=128).cuda()
         self.pool2 = WavePool(in_channels=128, out_channels=256).cuda()
         self.pool3 = WavePool(in_channels=256, out_channels=512).cuda()
-
-        self.recon_block3 = WaveUnpool(512, 256, Unpool).cuda()
-        self.recon_block2 = WaveUnpool(256, 128, Unpool).cuda()
-        self.recon_block1 = WaveUnpool(128, 64, Unpool).cuda()
+        if Unpool == 'deconv':
+            self.recon_block3 = DeConvBlock(512, 256).cuda()
+            self.recon_block2 = DeConvBlock(256, 128).cuda()
+            self.recon_block1 = DeConvBlock(128, 64).cuda()
+        else:
+            self.recon_block3 = WaveUnpool(512, 256, Unpool).cuda()
+            self.recon_block2 = WaveUnpool(256, 128, Unpool).cuda()
+            self.recon_block1 = WaveUnpool(128, 64, Unpool).cuda()
 
         self.adaptive_LL2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1)
         self.adaptive_LL1 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1)
@@ -454,6 +469,7 @@ class wavelet_concat_Gen(nn.Module):
                 x = m(x)
 
         x0 = self.down(x)
+
         x_deconv_0 = self.recon_block3(LL3, LH3, HL3, HH3)
         x1 = torch.cat((x0, x_deconv_0), 1)
 

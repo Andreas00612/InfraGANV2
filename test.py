@@ -83,7 +83,7 @@ if __name__ == '__main__':
             raise ValueError("Dataset [%s] not recognized." % opt.dataset_mode)
         if opt.dataset_mode != 'AirSim':
             model.test(inference=True)
-
+            #model.fake_B = util.normalize_image(model.fake_B )
             lpips_now = lpips_obj(model.real_B.cpu().clone(), model.fake_B.cpu().clone()).mean().item()
             lpips = (lpips * i + lpips_now) / (i + 1)
             ssim_now = ssim_obj(model.real_B.clone(), model.fake_B.clone()).item()

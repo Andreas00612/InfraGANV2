@@ -140,10 +140,6 @@ class SesameNLayerDiscriminator(nn.Module):
 
     def forward(self, input):
         img, sem = input[:, -3:], input[:, :-3]
-        if self.opt.wavelet_disc:
-            sem, _, _, _ = self.infra_pool(sem)
-            img, _, _, _ = self.img_pool(img)
-            # sem = torch.cat(sem,LL)
 
         sem_results = self.sem_sequence(sem)
         results = [img]
@@ -153,7 +149,7 @@ class SesameNLayerDiscriminator(nn.Module):
             results.append(intermediate_output)
             # results最後有 3,64,128,256,512
         # intermediate_output:512img和512sem經過my_dot
-        intermediate_output = self.my_dot(intermediate_output, sem_results)
+        intermediate_output = self.my_dot_new(intermediate_output, sem_results)
         results.append(self.img_sequence[-1](intermediate_output))
 
         # get_intermediate_features = not self.opt.no_ganFeat_loss
@@ -166,6 +162,8 @@ class SesameNLayerDiscriminator(nn.Module):
 
     def my_dot(self, x, y, z=None):
         return x + x * y.sum(1).unsqueeze(1)
+    def my_dot_new(self, rgb, target):
+        return target + rgb * target.sum(1).unsqueeze(1)
 
     def get_angle_embedding(self, image, angle):
         bs, _, h, w = image.size()
@@ -215,6 +213,7 @@ def get_nonspade_norm_layer(opt, norm_type='instance'):
             norm_layer = nn.InstanceNorm2d(get_out_channel(layer), affine=False)
         else:
             raise ValueError('normalization layer %s is not recognized' % subnorm_type)
+
 
         return nn.Sequential(layer, norm_layer)
 
@@ -377,13 +376,16 @@ class Wavelet_Sesame_Disc(nn.Module):
         for submodel in self.img_sequence[:-1]:
             intermediate_output = submodel(results[-1])
             results.append(intermediate_output)
-        intermediate_output = self.my_dot(intermediate_output, sem_results, sem_wavelet_result)
+        intermediate_output = self.my_dot_new(intermediate_output, sem_results, sem_wavelet_result)
         results.append(self.img_sequence[-1](intermediate_output))
 
         return results[-1]
 
     def my_dot(self, x, y, z=None):
         return x + x * y.sum(1).unsqueeze(1) + x * z.sum(1).unsqueeze(1)
+
+    def my_dot_new(self, rgb, target, wavelet=None):
+        return target + target * rgb.sum(1).unsqueeze(1) + target * wavelet.sum(1).unsqueeze(1)
 
     def get_angle_embedding(self, image, angle):
         bs, _, h, w = image.size()
