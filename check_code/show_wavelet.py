@@ -20,10 +20,10 @@ def padding_img(img):
 
 
 if __name__ == '__main__':
-    rgb_img = cv2.imread(r'D:\InfraGANV2\datasets\KAIST\KAIST-dataset\kaist-cvpr15\images\set00\V000\lwir\I00000.jpg',
+    rgb_img = cv2.imread(r'D:\InfraGANV2\datasets\KAIST\KAIST-dataset\kaist-cvpr15\images\set07\V000\lwir\I00810.jpg',
                          cv2.IMREAD_GRAYSCALE)
     infra_img = cv2.imread(
-        r'D:\InfraGANV2\datasets\KAIST\KAIST-dataset\kaist-cvpr15\images\set00\V000\visible\I00000.jpg')
+        r'D:\InfraGANV2\datasets\KAIST\KAIST-dataset\kaist-cvpr15\images\set07\V000\lwir\I00810.jpg')
     rgb_img = padding_img(rgb_img)
     h, w = rgb_img.shape
     coeffs = pywt.swt2(rgb_img, wavelet='haar', level=3)
@@ -43,6 +43,8 @@ if __name__ == '__main__':
     # LH_arr = np.clip(LH_arr, 0, 255).astype('uint8').transpose(1, 2, 0)
 
     # 保存 HL 和 HH 圖像
+
+
     cv2.imwrite('rgb_img.png', rgb_img.astype('uint8'))
     cv2.imwrite('HL_img.png', HL_arr.astype('uint8'))
     cv2.imwrite('HH_img.png', HH_arr.astype('uint8'))
