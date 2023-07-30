@@ -51,12 +51,10 @@ class GradLayer(nn.Module):
 
         if x.shape[1] == 3:
             x = self.get_gray(x)
-
         x = F.pad(x, (1, 1, 1, 1), mode='reflect')
         x_v = F.conv2d(x, self.weight_v, padding=1)
         x_h = F.conv2d(x, self.weight_h, padding=1)
         x = torch.sqrt(torch.pow(x_v, 2) + torch.pow(x_h, 2) + 1e-6)
-
         return x
 
 class GradLoss(nn.Module):
@@ -65,7 +63,6 @@ class GradLoss(nn.Module):
         super(GradLoss, self).__init__()
         self.loss = nn.L1Loss()
         self.grad_layer = GradLayer()
-
     def forward(self, output, gt_img):
         output_grad = self.grad_layer(output)
         gt_grad = self.grad_layer(gt_img)
